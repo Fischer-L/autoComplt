@@ -1,0 +1,12 @@
+------------------------------------------------------
+# Version: 0.0001beta
+
+# Date: 2013.12.30
+
+# Note:
+
+# Tetsed on:
+        > OK: FF 26.0, Chrome 31.0.1650.63 m, IE8/9/10
+
+# Future improvements in consideration:
+        > Set up a more systematic unit test
