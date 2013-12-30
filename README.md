@@ -27,18 +27,18 @@ Call autoComplt.enable to enable the autocompelte feature on the &lt;input&gt; e
 ```javascript
 var input = document.querySelector("input[name=name]");
 autoComplt.enable(input, {
-    // the dataFetcher is your customized function which search the proper autocomplete hints based on the user's input.
-    dataFetcher : function (v, openCallback) {
+    // the dataFetcher is your customized function which searchs the proper autocomplete hints based on the user's input value.
+    dataFetcher : function (v, openList) {
         var hints = [],
             names = [ "Masahiro Tanaka", "Darvish", "Daisuke Matsuzaka" ];
         
         for (var i = 0; i < names.length; i++) {
             if (names[i].indexOf(v) >= 0) {
-                htins.push(names[i]);
+                hints.push(names[i]);
             }
         }
         
-        openCallnack(hints);
+        openList(hints);
     }
 });
 ```
