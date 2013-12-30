@@ -16,6 +16,7 @@ Load the autoComplt js script into your document. After loading, there would be 
 
 
 == Example ==
+
 Suppose the HTML:
 ```html
 <input name="name" type="text"></input>
