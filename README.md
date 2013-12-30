@@ -1,7 +1,7 @@
 autoComplt
 ==========
 ## What is autoComplt ?
-The autoComplt is written in Javascript and lightweight and simple to use. It auto-generates the autocomplete list when user inputs some text in the <input> element.
+The autoComplt is written in Javascript and lightweight and simple to use. It auto-generates the autocomplete list when user inputs some text in the &lt;input> element.
 Try it here => http://jsfiddle.net/Fischer/eTw62/
 
 
