@@ -1,4 +1,9 @@
-/*** Public APIs ***
+/*******************************************************************************************
+ * autoComplt
+ *
+ * Copyright (C) 2013 Fischer Liu | MIT license | https://github.com/Fischer-L/previewbox
+ -------------------------------------------------------------------------------------------
+ *** Public APIs ***
 
 
 	[ autoComplt ]
@@ -57,7 +62,7 @@
 		# Func : Disable the autocomplete function
 	> destroy = function ()
 		# Func : Destroy the autocomplete function. Unlike this.disable which could be enabled again, this is going to eliminate all the functions.
-*/
+*******************************************************************************************/
 var autoComplt = (function () {
 /*	Properties:
 		[ Private ]
