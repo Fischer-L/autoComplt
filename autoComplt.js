@@ -12,8 +12,8 @@
 		# Arg:
 			<ELM> input = the <input> to enable
 			<OBJ> params = { // optional. The obj holding settings to init the autocomplete, including
-					 > dataFetcher : refer to input.autoComplt.setHintsFetcher for the valid value
-					 > delay, maxHintNum, styles : refer to input.autoComplt.config for the valid value
+					 > hintsFetcher : refer to input.autoComplt.setHintsFetcher for the valid value
+					 > delay, maxHintNum : refer to input.autoComplt.config for the valid value
 				  }
 		# Return:
 			@ OK: <ELM> the <input>
@@ -22,14 +22,14 @@
 
 	[ input.autoComplt ]
 	After enabling, the <input> would be attached one autoComplt obj. Use the autoComplt obj to control the autocomplete function
-	> setHintsFetcher = function (dataFetcher)
+	> setHintsFetcher = function (hintsFetcher)
 		# Func : Setup the callback to fetch the autocomplete hint.
 		# Arg:
-			<FN> dataFetcher = while user inputs sth, this dataFetcher function would be invoked with 2 args.
+			<FN> hintsFetcher = while user inputs sth, this hintsFetcher function would be invoked with 2 args.
 			                   The 1st one is the user's input value(text). Please go fetching your autocomplete hints based the user's value
 							   The 2nd one is one callback. Calling this callback would open the autocomplete list. This callback MUST be passed in the array of the hint texts or nothing happens.
 							   So after fetching your autocomplete hints please call the 2nd arg callback to open the autocomplete list.
-							   If the dataFetcher function is not set, no autocomplete funciton works.
+							   If the hintsFetcher function is not set, no autocomplete funciton works.
 		# Return:
 			@ OK: true
 			@ NG: false
@@ -39,29 +39,42 @@
 			<OBJ> params = {
 					<NUM> delay : the ms delays the work of fetching the autocomplete hints based on the user's input. Default is 100.
 					<NUM> maxHintNum : the max number of hints displayed. Default is 10
-					<OBJ> styles : {
-							<OBJ> "autoComplt-list" : { // The style of the autocomplete list
-									  > "border", "maxHeight", "backgroundColor" : refer to the valid CSS values
-								  },
-							<OBJ> "autoComplt-hint" : { // The style of the autocomplete hints
-									  > "height", "padding", "margin", "color", "backgroundColor" : refer to the valid CSS values
-								  },
-							<OBJ> "autoComplt-hint-selected" : { // The style of the autocomplete hint selected
-									  > "color", "backgroundColor" : refer to the valid CSS values
-								  },
-						  }
 				  }
 		# Return:
 			@ OK: <OBJ> An obj carrying the configs which just has been changed during the call. You could use it to check out whether the config action is successful or not
 			@ NG: false
+	> setStyle = function (targetClass, styles)
+		# Func : Set the autocomplete list's ui styles
+		# Arg:
+			<STR> targetClass = the css class selector of the target ui part which is being set styles, the valid value could be:
+			                    "autoComplt-list" => the autocomplete ul list
+								"autoComplt-hint" => the autocomplete hints
+								"autoComplt-hint-selected" => the autocomplete hint selected
+			<OBJ> styles = { // The obj holding the new styles to set
+						// For "autoComplt-list", the style which could be set
+						> "border", "maxHeight", "backgroundColor" : refer to the valid CSS values
+						
+						// For "autoComplt-hint", the style which could be set
+						> "height", "padding", "margin", "color", "backgroundColor" : refer to the valid CSS values
+						
+						// For "autoComplt-hint-selected", the style which could be set
+						> "color", "backgroundColor" : refer to the valid CSS values
+				  }
+		# Return: 
+			@ OK: <OBJ> An obj carrying the new styles' value which just has been set during the call. 
+			@ NG: false
 	> close = function ()
 		# Func : Close the autocomplete list
+		# Return: n/a
 	> enable = function ()
 		# Func : Enable the autocomplete function
+		# Return: n/a
 	> disable = function ()
 		# Func : Disable the autocomplete function
+		# Return: n/a
 	> destroy = function ()
 		# Func : Destroy the autocomplete function. Unlike this.disable which could be enabled again, this is going to eliminate all the functions.
+		# Return: n/a
 *******************************************************************************************/
 var autoComplt = (function () {
 /*	Properties:
@@ -618,7 +631,7 @@ var autoComplt = (function () {
 						> input_autoComplt_compltInput : Autocomplete the <input> according to the hint selection state
 						> input_autoComplt_blurEvtHandle, input_autoComplt_keyEvtHandle : The event handle
 						[ Public ]
-						> setHintsFetcher, config, close, enable, disable, destroy : Refe to the Public APIs above
+						> setHintsFetcher, config, setStyles, close, enable, disable, destroy : Refe to the Public APIs above
 				*/
 				input.autoComplt = {};
 				
@@ -739,11 +752,14 @@ var autoComplt = (function () {
 							}
 							else if (e.type == "keyup") {
 								
+								var startFetching = false;
+								
 								switch (e.keyCode) {
 									case _CONST.keyCode.up: case _CONST.keyCode.down:
 										if (input_autoComplt_list.isOpen()) {
 											// We have handled this 2 key codes onkeydown, so must do nothing here
-											return true;
+										} else {
+											startFetching = true;
 										}
 									break;
 									
@@ -752,7 +768,6 @@ var autoComplt = (function () {
 											// When pressing the ESC key, let's resume back to the original user input
 											input.value = input_autoComplt_currentTarget;
 											input.autoComplt.close();
-											return true;
 										}										
 									break;
 									
@@ -761,23 +776,28 @@ var autoComplt = (function () {
 											// When pressing the enter key, let's try autocomplete
 											input_autoComplt_compltInput.call(input);
 											input.autoComplt.close();
-											return true;
 										}
+									break;
+									
+									default:
+										startFetching = true;
 									break;
 								}
 								
-								if (input.value.length > 0) {
-									input_autoComplt_startFetcher.call(input);
-								} else {
-									input.autoComplt.close();
+								if (startFetching) {
+									if (input.value.length > 0) {
+										input_autoComplt_startFetcher.call(input);
+									} else {
+										input.autoComplt.close();
+									}
 								}
 							}
 						}
 					};
 
-				input.autoComplt.setHintsFetcher = function (dataFetcher) {
-					if (typeof dataFetcher == "function") {
-						input_autoComplt_hintsFetcher = dataFetcher;
+				input.autoComplt.setHintsFetcher = function (hintsFetcher) {
+					if (typeof hintsFetcher == "function") {
+						input_autoComplt_hintsFetcher = hintsFetcher;
 						return true;
 					}
 					return false;
@@ -803,6 +823,7 @@ var autoComplt = (function () {
 							input_autoComplt_list.maxHintNum = pms.maxHintNum = buf;
 						}
 						
+						/* TO DEL:
 						// Config the style
 						//
 						if (params.styles instanceof Object) {
@@ -887,10 +908,53 @@ var autoComplt = (function () {
 								delete pms.styles;
 							}
 						}
+						*/
 						
 						return pms;
 					}
 					return false;
+				}
+				
+				input.autoComplt.setStyles = function (targetClass, styles) {
+				
+					var tStyles,
+						adjStyleAttrs,
+						newStyles = false;
+					
+					// Let's find out which the target UI part is being set
+					switch (targetClass) {
+						case _CONST.autoCompltListClass:
+							tStyles = input_autoComplt_list.styles.autoCompltList;
+							adjStyleAttrs = _CONST.adjStyleAttrs.autoCompltList;
+						break;
+						
+						case _CONST.autoCompltHintClass:
+							tStyles = input_autoComplt_list.styles.autoCompltHint;
+							adjStyleAttrs = _CONST.adjStyleAttrs.autoCompltHint;
+						break;
+						
+						case _CONST.autoCompltHintSelectedClass:
+							tStyles = input_autoComplt_list.styles.autoCompltHintSelected;
+							adjStyleAttrs = _CONST.adjStyleAttrs.autoCompltHintSelected;
+						break;
+					}
+
+					if (styles instanceof Object && tStyles && adjStyleAttrs) {
+						
+						for (var i = 0; i < adjStyleAttrs.length; i++) {
+							
+							if (typeof styles[adjStyleAttrs[i]] == "string" || typeof styles[adjStyleAttrs[i]] == "number") { // A simple type checking
+								if (!newStyles) {
+									newStyles = {};
+								}
+								newStyles[adjStyleAttrs[i]] = tStyles[adjStyleAttrs[i]] = styles[adjStyleAttrs[i]];
+							}
+							
+						}						
+					
+					}
+					
+					return newStyles;
 				}
 				
 				input.autoComplt.close = function () {
@@ -921,7 +985,7 @@ var autoComplt = (function () {
 				
 				if (params instanceof Object) {
 					input.autoComplt.config(params);
-					input.autoComplt.setHintsFetcher(params.dataFetcher);
+					input.autoComplt.setHintsFetcher(params.hintsFetcher);
 				}
 				
 				return input;
