@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<style>
+		.autoCmplt-input {
+			height: 2em;
+			padding: 2px;
+			margin: 10%;
+		}
+		.autoCmplt-input.input-1 {
+			width: 80px;
+		}
+		.autoCmplt-input.input-2 {
+			width: 200px;
+		}
+	</style>
+</head>
+
+<body>
+	<input class="autoCmplt-input input-0" type="text" placeholder="Please key in some text.">
+	<input class="autoCmplt-input input-1" type="text" placeholder="Please key in some text.">
+	<input class="autoCmplt-input input-2" type="text" placeholder="Please key in some text.">
+	<script type="text/javascript" src="autoComplt.js"></script>
+	<script>
+	
+		var inputs = document.querySelectorAll("input"),
+
+			hintsFetcher = function (v, openCallback) {
+				var i,
+					hints = [],
+					words = [
+						"Abyssinian", "Ainu Dog", "Alligator", "Barb", "Bloodhound",
+						"Chinook", "Cougar", "Dingo", "Dormouse", "Earwig",
+						"Emperor Tamarin", "Falcon", "Fennec Fox", "Gecko", "German Shepherd",
+						"Hammerhead Shark", "Hermit Crab", "Iguana", "Javan Rhinoceros", "Lion"
+					];
+					
+				for (i = 0; i < words.length; i++) {
+					if (words[i].indexOf(v) >= 0) {
+						hints.push(words[i]);
+					}
+				}
+				
+				openCallback(hints);
+			},
+			
+			test = { // Just for the quick unit test
+				cases : [],
+				addCase : function (name, func) {
+					this.cases.push({ name : name, func : func});
+				},
+				runCases : function () {
+					for (var i = 0, c; i < this.cases.length; i++) {
+						c = this.cases[i];
+						if (c.func()) {
+							console.log("Pass on the %s test", c.name);
+						} else {
+							console.log("Fail on the %s test", c.name);
+						}
+					}
+				}
+			};
+		
+		test.addCase("enable_input-0", function () {			
+			return !!autoComplt.enable(inputs[0], {					
+						hintsFetcher : hintsFetcher
+					 });
+		});
+		test.addCase("enable_input-1", function () {			
+			return !!autoComplt.enable(inputs[1]);
+		});
+		test.addCase("enable_input-2", function () {
+			return !!autoComplt.enable(inputs[2],
+						{
+							hintsFetcher : hintsFetcher,
+							maxHintNum : 6
+						}
+					 );
+		});
+		test.addCase("setHintsFetcher", function () {			
+			return inputs[1].autoComplt.setHintsFetcher(hintsFetcher);
+		});
+		test.addCase("config", function () {
+			var toset = {
+					delay : 300,
+					maxHintNum : 5
+				},
+				set = inputs[2].autoComplt.config(toset);
+			
+			return !!(toset.delay === set.delay && toset.maxHintNum === set.maxHintNum);
+		});
+		test.addCase("setStyles", function () {
+		
+			var i,
+				j,
+				tmp,
+				input,
+				targets,
+				styles,
+				setStyles = function () {				
+					for (i = 0; i < targets.length; i++) {
+						
+						tmp = {};
+						for (j = 0; j < styles[targets[i]].attrs.length; j++) {
+							tmp[styles[targets[i]].attrs[j]] = styles[targets[i]].values[j];
+						}				
+					
+						tmp = input.autoComplt.setStyles(targets[i], tmp);
+						
+						for (j = 0; j < styles[targets[i]].attrs.length; j++) {
+							
+							if (tmp[styles[targets[i]].attrs[j]] !== styles[targets[i]].values[j]) {
+								return false;
+							}					
+						}
+					}
+					
+					return true;
+				}
+			
+			input = inputs[1];
+			targets = [ "autoComplt-list", "autoComplt-hint", "autoComplt-hint-selected" ];
+			styles = {
+				"autoComplt-list" : {
+					attrs : [ "border", "maxHeight" ],
+					values : [ "4px dotted green", "8em" ]
+				},
+				"autoComplt-hint-selected" : {
+					attrs : [ "color", "backgroundColor" ],
+					values : [ "blue", "yellow" ]
+				},
+				"autoComplt-hint" : {
+					attrs : [ "margin" ],
+					values : [ "12px 0px 6px 0px" ]
+				}
+			};			
+			if (!setStyles()) {
+				return false;
+			}
+			
+			input = inputs[2];
+			targets = [ "autoComplt-hint" ];
+			styles = {
+				"autoComplt-hint" : {
+					attrs : [ "height", "padding", "margin", "color", "backgroundColor" ],
+					values : [ "1em", "6px 4px", "12px 4px", "red", "#efefef" ]
+				}
+			};			
+			if (!setStyles()) {
+				return false;
+			}
+			
+			return true;
+		});
+		test.addCase("destroy", function () {
+			inputs[0].autoComplt.destroy(hintsFetcher);
+			if (!inputs[0].autoComplt) {
+				autoComplt.enable(inputs[0], {					
+					hintsFetcher : hintsFetcher
+				});
+				return true;
+			}
+		});
+		
+		test.runCases();
+	</script>
+</body>
+
+</html>
