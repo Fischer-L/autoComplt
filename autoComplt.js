@@ -1,7 +1,7 @@
 /*******************************************************************************************
  * autoComplt
  *
- * Copyright (C) 2013 Fischer Liu | MIT license | https://github.com/Fischer-L/previewbox
+ * Copyright (C) 2013 Fischer Liu | MIT license | https://github.com/Fischer-L/autoComplt.js
  -------------------------------------------------------------------------------------------
  *** Public APIs ***
 
