@@ -5,7 +5,6 @@
  -------------------------------------------------------------------------------------------
  *** Public APIs ***
 
-
 	[ autoComplt ]
 	> enable : function (input, params)
 		# Func : Enable the autocomplete function on one <input> elem
@@ -822,93 +821,6 @@ var autoComplt = (function () {
 						if (buf > 0) {
 							input_autoComplt_list.maxHintNum = pms.maxHintNum = buf;
 						}
-						
-						/* TO DEL:
-						// Config the style
-						//
-						if (params.styles instanceof Object) {
-						
-							var i, j;
-							
-							pms.styles = {
-								autoCompltList : {
-									count : 0
-								},
-								autoCompltHint : {
-									count : 0
-								},
-								autoCompltHintSelected : {
-									count : 0
-								}
-							};
-							
-							buf = params.styles[_CONST.autoCompltListClass];
-							if (buf instanceof Object) {
-								
-								for (i = 0; i < _CONST.adjStyleAttrs.autoCompltList.length; i++) {
-									
-									j = _CONST.adjStyleAttrs.autoCompltList[i];
-									if (buf[j]) {
-										pms.styles.autoCompltList[j] = input_autoComplt_list.styles.autoCompltList[j] = buf[j];
-										pms.styles.autoCompltList.count++;
-									}
-								}
-							}
-		
-							buf = params.styles[_CONST.autoCompltHintClass];
-							if (buf instanceof Object) {
-								
-								for (i = 0; i < _CONST.adjStyleAttrs.autoCompltHint.length; i++) {
-									
-									j = _CONST.adjStyleAttrs.autoCompltHint[i];
-									if (buf[j]) {
-										pms.styles.autoCompltHint[j] = input_autoComplt_list.styles.autoCompltHint[j] = buf[j];
-										pms.styles.autoCompltHint.count++;
-									}
-								}
-							}
-							
-							buf = params.styles[_CONST.autoCompltHintSelectedClass];
-							if (buf instanceof Object) {
-								
-								for (i = 0; i < _CONST.adjStyleAttrs.autoCompltHintSelected.length; i++) {
-									
-									j = _CONST.adjStyleAttrs.autoCompltHintSelected[i];
-									if (buf[j]) {
-										pms.styles.autoCompltHintSelected[j] = input_autoComplt_list.styles.autoCompltHintSelected[j] = buf[j];
-										pms.styles.autoCompltHintSelected.count++;
-									}
-								}
-							}
-							
-							if (  pms.styles.autoCompltList.count
-								+ pms.styles.autoCompltHint.count
-								+ pms.styles.autoCompltHintSelected.count > 0
-							) {
-								
-								if (pms.styles.autoCompltList.count > 0) {
-									pms.styles["autoComplt-list"] = pms.styles.autoCompltList;
-									delete pms.styles["autoComplt-list"].count;
-								}
-								delete pms.styles.autoCompltList;
-								
-								if (pms.styles.autoCompltHint.count > 0) {
-									pms.styles["autoComplt-hint"] = pms.styles.autoCompltHint;
-									delete pms.styles["autoComplt-hint"].count;
-								}
-								delete pms.styles.autoCompltHint;
-								
-								if (pms.styles.autoCompltHintSelected.count > 0) {
-									pms.styles["autoComplt-hint-selected"] = pms.styles.autoCompltHintSelected;
-									delete pms.styles["autoComplt-hint-selected"].count;
-								}
-								delete pms.styles.autoCompltHintSelected;
-								
-							} else {
-								delete pms.styles;
-							}
-						}
-						*/
 						
 						return pms;
 					}
