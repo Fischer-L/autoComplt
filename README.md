@@ -47,6 +47,5 @@ After running the codes here, the autocomplete list will appear to give the hint
 
 
 ## Configuration and styles
-The &lt;input&gt; element which is enabled with the autocomplete feature would carrys one property named "autoComplt". Use that property's input.autoComplt.config method to config the autocomplete features and change the UI styles. There are more public APIs for use, please refer to the autoComplt.js.
-
+The &lt;input&gt; element which is enabled with the autocomplete feature would carrys one property named "autoComplt". Use that property's input.autoComplt.config method to config the autocomplete features and input.autoComplt.setStyles to change the UI styles. There are more public APIs for use, please refer to the autoComplt.js.
 
