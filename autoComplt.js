@@ -54,7 +54,7 @@
 						> "border", "maxHeight", "backgroundColor" : refer to the valid CSS values
 						
 						// For "autoComplt-hint", the style which could be set
-						> "height", "padding", "margin", "color", "backgroundColor" : refer to the valid CSS values
+						> "height", "padding", "margin", "color", "backgroundColor", "fontSize" : refer to the valid CSS values
 						
 						// For "autoComplt-hint-selected", the style which could be set
 						> "color", "backgroundColor" : refer to the valid CSS values
@@ -142,7 +142,8 @@ var autoComplt = (function () {
 				listStyleType: "none",
 				color : "#000",
 				backgroundColor : "#fff",
-				cursor : "default"
+				cursor : "default",
+				fontSize : "1em"
 			},
 			
 			autoCompltHintSelected : {
@@ -153,7 +154,7 @@ var autoComplt = (function () {
 		
 		adjStyleAttrs : {
 			autoCompltList : [ "border", "maxHeight", "backgroundColor" ],
-			autoCompltHint : [ "height", "padding", "margin", "color", "backgroundColor" ],
+			autoCompltHint : [ "height", "padding", "margin", "color", "backgroundColor", "fontSize" ],
 			autoCompltHintSelected : [ "color", "backgroundColor" ]
 		}
 	};
@@ -287,6 +288,7 @@ var autoComplt = (function () {
 				hint.style.color = styles.autoCompltHint.color;
 				hint.style.backgroundColor = styles.autoCompltHint.backgroundColor;
 				hint.style.cursor = styles.autoCompltHint.cursor;
+				hint.style.fontSize = styles.autoCompltHint.fontSize;
 
 				return hint;
 			}
@@ -299,7 +301,7 @@ var autoComplt = (function () {
 				@ NG: null
 		*/
 		buildList : function (styles) {
-			var list = this.buildElem('<ul class="' + _CONST.autoCompltListClass + '"></ui>');
+			var list = this.buildElem('<ul class="' + _CONST.autoCompltListClass + '"></ul>');
 			
 			list.style.maxHeight = styles.autoCompltList.maxHeight;
 			list.style.border = styles.autoCompltList.border;	
@@ -319,7 +321,7 @@ var autoComplt = (function () {
 			[ Public ]
 			<ELM> uiElem = the autocomplete list current being displayed and associated with.
 			<ELM> assocInput = the input elem associated with
-			<BOO> mousedownOnList = A little flag marking the mousedown action
+			<BOO> mouseOnList = A little flag marking the moused is on the top of the autocomplete list
 			<NUM> maxHintNum = The max number of hints displayed
 			<OBJ> styles = the obj holding the style setting of the list and hints. Refer to _CONST.defaultStyles for the required styles.
 		Methods:
@@ -340,7 +342,9 @@ var autoComplt = (function () {
 
 		this.uiElem = null;
 		this.assocInput = assocInput;
-		this.mousedownOnList = false;
+		this.mouseOnList = false;
+		this.pauseMouseoverSelection = false;
+		this.pauseMouseoutDeselection = false;
 		this.maxHintNum = _CONST.maxHintNum;
 		this.styles = JSON.parse(JSON.stringify(_CONST.defaultStyles)); // Copy the default first
 
@@ -359,13 +363,12 @@ var autoComplt = (function () {
 					e = _normalizeEvt(e);
 					if (that.isHint(e.target)) {
 						that.select(e.target);
-					} else {
-						that.deselect();
+						that.autoScroll();
 					}
 				});
 				
 				// Make hint not selected onmouseout
-				_addEvt(this.uiElem, "mouseout", function (e) {
+				_addEvt(this.uiElem, "mouseout", function (e) {					
 					e = _normalizeEvt(e);
 					that.deselect();
 				});
@@ -373,7 +376,7 @@ var autoComplt = (function () {
 				// Prepare for the hint selection by clicking
 				_addEvt(this.uiElem, "mousedown", function (e) {
 					e = _normalizeEvt(e);	
-					that.mousedownOnList = true;						
+					that.mouseOnList = true;						
 					// One hack for FF.
 					// Even call focus methos on the input's onblur event, however, still the input losese its focus.
 					// As a result we have to set a timeout here
@@ -506,6 +509,7 @@ var autoComplt = (function () {
 		*/
 		_AutoCompltList.prototype.close = function () {
 			if (this.uiElem && !_DBG) {
+				this.mouseOnList = false;
 				this.uiElem.parentNode.removeChild(this.uiElem);
 				this.uiElem = null;
 			}
@@ -579,9 +583,7 @@ var autoComplt = (function () {
 					this.deselect();					
 					hint.className += " " + _CONST.autoCompltHintSelectedClass;
 					hint.style.color = this.styles.autoCompltHintSelected.color;
-					hint.style.backgroundColor = this.styles.autoCompltHintSelected.backgroundColor;
-					
-					this.autoScroll();
+					hint.style.backgroundColor = this.styles.autoCompltHintSelected.backgroundColor;					
 				}
 			}
 		}
@@ -694,11 +696,11 @@ var autoComplt = (function () {
 					*/
 					input_autoComplt_blurEvtHandle = function (e) {
 						e = _normalizeEvt(e);
-						if (input_autoComplt_list.mousedownOnList) {
+						if (input_autoComplt_list.mouseOnList) {
 						// If the mouse is on the autocomplete list, do not close the list
 						// and still need to focus on the input.
 							input.focus();
-							input_autoComplt_list.mousedownOnList = false; // Assign false for the next detection
+							input_autoComplt_list.mouseOnList = false; // Assign false for the next detection
 						} else {
 							input.autoComplt.close();
 						}
@@ -715,7 +717,7 @@ var autoComplt = (function () {
 							) {
 							// At the case that the hint list is open ans user is walkin thru the hints.
 							// Let's try to autocomplete the input by the selected input.
-							
+								
 								var hint = input_autoComplt_list.getSelected();
 								
 								if (e.keyCode === _CONST.keyCode.up) {
@@ -745,6 +747,8 @@ var autoComplt = (function () {
 									}
 									
 								}
+								
+								input_autoComplt_list.autoScroll();
 								
 								input_autoComplt_compltInput.call(input);
 
