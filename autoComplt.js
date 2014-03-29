@@ -407,7 +407,7 @@ var autoComplt = (function () {
 		_AutoCompltList.prototype.isHint = function (el) {
 			if (el && typeof el == "object" && el.nodeType === 1) {
 				var cls = " " + el.className + " ";
-				return !!(cls.indexOf(" " + _CONST.autoCompltHintClass + " ") >= 0);
+				return (cls.indexOf(" " + _CONST.autoCompltHintClass + " ") >= 0);
 			}
 			return false;
 		}
@@ -458,7 +458,7 @@ var autoComplt = (function () {
 		*/		
 		_AutoCompltList.prototype.isOpen = function () {
 			if (this.uiElem) {
-				return !!(this.uiElem.getAttribute(_CONST.listStatus.attr) == _CONST.listStatus.open);
+				return (this.uiElem.getAttribute(_CONST.listStatus.attr) == _CONST.listStatus.open);
 			}
 			return false;
 		}
@@ -563,7 +563,7 @@ var autoComplt = (function () {
 			
 				var hint = null;
 			
-				if (typeof candidate == "object" && this.isHint(candidate)) {
+				if (this.isHint(candidate)) {
 				
 					hint = candidate;
 				
@@ -814,14 +814,14 @@ var autoComplt = (function () {
 						
 						// Config the fetching delay timing
 						//
-						buf = Math.floor(+params.delay);
+						buf = Math.floor(params.delay);
 						if (buf > 0) {
 							input_autoComplt_delay = pms.delay = buf;
 						}
 						
 						// Config the max number of displayed hints
 						//
-						buf = Math.floor(+params.maxHintNum);
+						buf = Math.floor(params.maxHintNum);
 						if (buf > 0) {
 							input_autoComplt_list.maxHintNum = pms.maxHintNum = buf;
 						}
@@ -831,7 +831,7 @@ var autoComplt = (function () {
 					return false;
 				}
 				
-				input.autoComplt.setStyles = function (targetClass, styles) {
+				input.autoComplt.setStyles = function (targetClass, styles) {				
 				
 					var tStyles,
 						adjStyleAttrs,
