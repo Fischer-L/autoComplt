@@ -1,0 +1,17 @@
+{
+  "name": "autoComplt",
+  "author": "Fischer-L",
+  "version": "0.0.1",
+  "private": false,
+  "contributors": [
+    "Fischer-L",
+    "Alex Danilenko <alxdnlnko@gmail.com> (https://github.com/alxdnlnko)"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "gulp": "^3.6.2",
+    "gulp-uglify": "^0.2.1",
+    "gulp-rename": "^1.2.0",
+    "gulp-streamify": "0.0.5"
+  }
+}
