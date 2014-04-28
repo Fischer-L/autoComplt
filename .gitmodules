@@ -1,0 +1,9 @@
+[submodule "chef/nodejs"]
+	path = chef/nodejs
+	url = git@github.com:phlipper/chef-nodejs.git
+[submodule "chef/apt"]
+	path = chef/apt
+	url = git@github.com:opscode-cookbooks/apt.git
+[submodule "chef/npm"]
+	path = chef/npm
+	url = git@github.com:balbeko/chef-npm.git

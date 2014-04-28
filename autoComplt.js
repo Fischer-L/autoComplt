@@ -52,15 +52,15 @@
 			<OBJ> styles = { // The obj holding the new styles to set
 						// For "autoComplt-list", the style which could be set
 						> "border", "maxHeight", "backgroundColor" : refer to the valid CSS values
-						
+
 						// For "autoComplt-hint", the style which could be set
 						> "height", "padding", "margin", "color", "backgroundColor", "fontSize" : refer to the valid CSS values
-						
+
 						// For "autoComplt-hint-selected", the style which could be set
 						> "color", "backgroundColor" : refer to the valid CSS values
 				  }
-		# Return: 
-			@ OK: <OBJ> An obj carrying the new styles' value which just has been set during the call. 
+		# Return:
+			@ OK: <OBJ> An obj carrying the new styles' value which just has been set during the call.
 			@ NG: false
 	> close = function ()
 		# Func : Close the autocomplete list
@@ -91,36 +91,36 @@ var autoComplt = (function () {
 		> _getComputedStyle : Get the computed style value, used for cross-browser mitigation
 		[ Public ]
 		> enable : Refer to the Public APIs above
-		
+
 */
 	var _DBG = 0; // A little debug flag
-	
+
 	var _CONST = {
-		
+
 		autoCompltListClass : "autoComplt-list",
-		
+
 		autoCompltHintClass : "autoComplt-hint",
-		
+
 		autoCompltHintSelectedClass : "autoComplt-hint-selected",
-		
+
 		maxHintNum : 10,
-		
+
 		autoCompltDelay : 100, // in ms
-		
+
 		listStatus : {
 			attr : "data-listStatus",
 			open : "open",
 		},
-		
+
 		keyCode : {
 			up : 38,
 			down : 40,
 			esc : 27,
 			enter : 13
 		},
-	
+
 		defaultStyles : {
-		
+
 			autoCompltList : {
 				maxHeight : "none",
 				border : "1px solid #aaa",
@@ -133,7 +133,7 @@ var autoComplt = (function () {
 				position: "absolute",
 				backgroundColor : "#fff",
 			},
-			
+
 			autoCompltHint : {
 				height : "1.5em",
 				padding: "2px 6px 2px 10px",
@@ -145,13 +145,13 @@ var autoComplt = (function () {
 				cursor : "default",
 				fontSize : "1em"
 			},
-			
+
 			autoCompltHintSelected : {
 				color : "#fff",
 				backgroundColor : "#3399ff"
 			}
 		},
-		
+
 		adjStyleAttrs : {
 			autoCompltList : [ "border", "maxHeight", "backgroundColor" ],
 			autoCompltHint : [ "height", "padding", "margin", "color", "backgroundColor", "fontSize" ],
@@ -163,7 +163,7 @@ var autoComplt = (function () {
 		Return:
 			<OBJ> the normalized event obj
 	*/
-	var _normalizeEvt = function (e) {					
+	var _normalizeEvt = function (e) {
 		e = e || window.event;
 		e.target = e.target || e.srcElement;
 		e.stopBubble = function () {
@@ -204,15 +204,15 @@ var autoComplt = (function () {
 	*/
 	var _getComputedStyle = function (elem, name) {
 		var v = null;
-		
+
 		if (window.getComputedStyle) {
-			
+
 			v = window.getComputedStyle(elem)[name] || null;
-			
+
 		} else if (elem.currentStyle) { // Hack for IE...Reference from the jQuery
-			
+
 			v = elem.currentStyle && elem.currentStyle[name]
-			
+
 			var left,
 				rsLeft,
 				style = elem.style;
@@ -247,9 +247,9 @@ var autoComplt = (function () {
 			if ( rsLeft ) {
 				elem.runtimeStyle.left = rsLeft;
 			}
-			
+
 		}
-		
+
 		return v;
 	}
 	/*	Methods:
@@ -293,7 +293,7 @@ var autoComplt = (function () {
 				return hint;
 			}
 			return null;
-		},				
+		},
 		/*	Arg:
 				<OBJ> styles = the obk holding the styles to set. Refer to _CONST.defaultStyles.autoCompltList for the required styles
 			Return:
@@ -302,9 +302,9 @@ var autoComplt = (function () {
 		*/
 		buildList : function (styles) {
 			var list = this.buildElem('<ul class="' + _CONST.autoCompltListClass + '"></ul>');
-			
+
 			list.style.maxHeight = styles.autoCompltList.maxHeight;
-			list.style.border = styles.autoCompltList.border;	
+			list.style.border = styles.autoCompltList.border;
 			list.style.padding = styles.autoCompltList.padding;
 			list.style.margin = styles.autoCompltList.margin;
 			list.style.zIndex = styles.autoCompltList.zIndex;
@@ -353,11 +353,11 @@ var autoComplt = (function () {
 		*/
 		_AutoCompltList.prototype.genList = function () {
 			if (!this.uiElem) {
-			
+
 				var that = this;
-				
-				this.uiElem = _ui.buildList(this.styles);						
-				
+
+				this.uiElem = _ui.buildList(this.styles);
+
 				// Make hint selected onmouseover
 				_addEvt(this.uiElem, "mouseover", function (e) {
 					e = _normalizeEvt(e);
@@ -366,25 +366,25 @@ var autoComplt = (function () {
 						that.autoScroll();
 					}
 				});
-				
+
 				// Make hint not selected onmouseout
-				_addEvt(this.uiElem, "mouseout", function (e) {					
+				_addEvt(this.uiElem, "mouseout", function (e) {
 					e = _normalizeEvt(e);
 					that.deselect();
 				});
-				
+
 				// Prepare for the hint selection by clicking
 				_addEvt(this.uiElem, "mousedown", function (e) {
-					e = _normalizeEvt(e);	
-					that.mouseOnList = true;						
+					e = _normalizeEvt(e);
+					that.mouseOnList = true;
 					// One hack for FF.
 					// Even call focus methos on the input's onblur event, however, still the input losese its focus.
 					// As a result we have to set a timeout here
 					setTimeout(function () {
 						that.assocInput.focus();
 					}, 50);
-				});				
-				
+				});
+
 				// Select hint by clicking
 				_addEvt(this.uiElem, "mouseup", function (e) {
 					e = _normalizeEvt(e);
@@ -394,7 +394,7 @@ var autoComplt = (function () {
 						that.assocInput.autoComplt.close();
 					}
 				});
-				
+
 				document.body.appendChild(this.uiElem);
 			}
 		}
@@ -422,24 +422,24 @@ var autoComplt = (function () {
 				var i,
 					j,
 					hs = [];
-				
-				j = Math.min(hints.length, this.maxHintNum);				
+
+				j = Math.min(hints.length, this.maxHintNum);
 				for (i = 0; i < j; i++) {
 					hs.push(_ui.buildHint(hints[i], this.styles));
 					if (!hs[hs.length - 1]) {
 						hs.pop();
 					}
 				}
-				
+
 				if (hs.length > 0) {
 					var buf = document.createDocumentFragment();
 					for (i = 0, count = hs.length; i < count; i++) {
 						buf.appendChild(hs[i]);
 					}
 					this.clearHints();
-					
+
 					this.genList(); // Geneate the list in case there is none
-					this.uiElem.appendChild(buf);							
+					this.uiElem.appendChild(buf);
 				}
 			}
 			return count;
@@ -455,7 +455,7 @@ var autoComplt = (function () {
 			Return:
 				@ Ok: true
 				@ NG: false
-		*/		
+		*/
 		_AutoCompltList.prototype.isOpen = function () {
 			if (this.uiElem) {
 				return (this.uiElem.getAttribute(_CONST.listStatus.attr) == _CONST.listStatus.open);
@@ -464,22 +464,22 @@ var autoComplt = (function () {
 		}
 		/*
 		*/
-		_AutoCompltList.prototype.open = function () {	
+		_AutoCompltList.prototype.open = function () {
 			var hints;
-				
+
 			if (this.uiElem
 				&& (hints = this.uiElem.querySelectorAll("." + _CONST.autoCompltHintClass))
 				&& hints.length // At lease one hint exists, we would open...
 			) {
 				var i,
 					buf;
-				
+
 				// Position the list
 				buf = this.assocInput.getBoundingClientRect();
 				this.uiElem.style.top = (document.documentElement && document.documentElement.scrollTop ? document.documentElement.scrollTop : document.body.scrollTop)
 									  + buf.bottom + "px";
 				this.uiElem.style.left = buf.left + "px";
-				
+
 				// Calculate the list's width
 				buf = buf.right - buf.left - parseFloat(_getComputedStyle(this.uiElem, "borderLeftWidth")) - parseFloat(_getComputedStyle(this.uiElem, "borderRightWidth"));
 				this.uiElem.style.width = buf + "px";
@@ -488,8 +488,8 @@ var autoComplt = (function () {
 				for (i = 0, buf = 0; i < hints.length; i++) {
 					buf += parseFloat(_getComputedStyle(hints[i], "height"))
 					     + parseFloat(_getComputedStyle(hints[i], "paddingTop"))
-					     + parseFloat(_getComputedStyle(hints[i], "paddingBottom"));						 
-						 
+					     + parseFloat(_getComputedStyle(hints[i], "paddingBottom"));
+
 					if (hints[i+1]) { // Compute the margin between the hints
 						buf += Math.max(
 							parseFloat(_getComputedStyle(hints[i], "marginBottom")), parseFloat(_getComputedStyle(hints[i+1], "marginTop"))
@@ -501,7 +501,7 @@ var autoComplt = (function () {
 				this.uiElem.style.height = (buf + 1) + "px"; // Plus one for a little buffer
 
 				// Open
-				this.uiElem.setAttribute(_CONST.listStatus.attr, _CONST.listStatus.open);				
+				this.uiElem.setAttribute(_CONST.listStatus.attr, _CONST.listStatus.open);
 				this.uiElem.style.display = "block";
 			}
 		}
@@ -525,15 +525,15 @@ var autoComplt = (function () {
 					hintH = hint.clientHeight,
 					hintMT = parseFloat(_getComputedStyle(hint, "marginTop")),
 					hintMB = parseFloat(_getComputedStyle(hint, "marginBottom"));
-				
+
 				currHint = hint.previousSibling;
 
 				minDisplayH = hintH + (currHint ? Math.max(hintMT, hintMB) : hintMT); // The min height to display one hint
-				
+
 				while (currHint) {
-				
+
 					offset += hintH; // Add the current hint' hintH
-					
+
 					currHint = currHint.previousSibling;
 					if (currHint) {
 						// There is one hint before the current hint so calculate based on the collapsed model
@@ -543,7 +543,7 @@ var autoComplt = (function () {
 						offset += hintMT;
 					}
 				}
-				
+
 				if (this.uiElem.clientHeight + this.uiElem.scrollTop - offset < minDisplayH
 					|| offset - this.uiElem.scrollTop < minDisplayH
 				) {
@@ -558,32 +558,32 @@ var autoComplt = (function () {
 									  2) the index of the hint in the list. Passing in -1 would select the last hint. Passing in 0 would select the 1st hint.
 		*/
 		_AutoCompltList.prototype.select = function (candidate) {
-		
+
 			if (this.uiElem) {
-			
+
 				var hint = null;
-			
+
 				if (this.isHint(candidate)) {
-				
+
 					hint = candidate;
-				
+
 				} else if (typeof candidate == "number" && (candidate >= 0 || candidate === -1)) {
-				
+
 					var hints = this.uiElem.querySelectorAll("." + _CONST.autoCompltHintClass);
-					
+
 					if (hints.length > 0) {
 						hint = +candidate;
 						hint = (hint === -1 || hint > hints.length - 1) ? hints.length - 1 : hint;
 						hint = hints[hint];
-					}					
+					}
 				}
-			
+
 				if (hint !== null) {
-					
-					this.deselect();					
+
+					this.deselect();
 					hint.className += " " + _CONST.autoCompltHintSelectedClass;
 					hint.style.color = this.styles.autoCompltHintSelected.color;
-					hint.style.backgroundColor = this.styles.autoCompltHintSelected.backgroundColor;					
+					hint.style.backgroundColor = this.styles.autoCompltHintSelected.backgroundColor;
 				}
 			}
 		}
@@ -618,7 +618,7 @@ var autoComplt = (function () {
 				&& input.nodeType === 1
 				&& !input.autoComplt
 			) {
-				
+
 				/*	Propertise:
 						[ Private ]
 						<NUM> input_autoComplt_delay = the ms delays the work of fetching the autocomplete hints based on the user's input
@@ -635,7 +635,7 @@ var autoComplt = (function () {
 						> setHintsFetcher, config, setStyles, close, enable, disable, destroy : Refe to the Public APIs above
 				*/
 				input.autoComplt = {};
-				
+
 				var input_autoComplt_delay = _CONST.autoCompltDelay,
 					input_autoComplt_enabled = true,
 					input_autoComplt_currentTarget = "",
@@ -650,7 +650,7 @@ var autoComplt = (function () {
 							&& input_autoComplt_currentTarget !== this.value // If equals, it means we've already been searching for the hints for the same value
 						) {
 							var fetcherCaller = {};
-							
+
 							fetcherCaller.call = function () {
 								input_autoComplt_hintsFetcher.call(
 									fetcherCaller.that,
@@ -658,16 +658,16 @@ var autoComplt = (function () {
 									fetcherCaller.openHint
 								);
 							};
-							
+
 							fetcherCaller.that = input;
-							
+
 							// Record the autocomplete target for this fetching job
 							fetcherCaller.compltTarget = input_autoComplt_currentTarget = this.value;
-							
+
 							fetcherCaller.openHint = function (hints) {
 								// If the user's input has changed during the fetching, this fetching job is useless.
 								// So only when the user's input doesn't change, we will proceed further.
-								if (fetcherCaller.compltTarget === input_autoComplt_currentTarget) {							
+								if (fetcherCaller.compltTarget === input_autoComplt_currentTarget) {
 									if (input_autoComplt_list.putHints(hints)) {
 										input_autoComplt_list.open();
 									} else {
@@ -675,7 +675,7 @@ var autoComplt = (function () {
 									}
 								}
 							}
-							
+
 							setTimeout(fetcherCaller.call, input_autoComplt_delay);
 						}
 					},
@@ -710,53 +710,53 @@ var autoComplt = (function () {
 					input_autoComplt_keyEvtHandle = function (e) {
 						e = _normalizeEvt(e);
 						if (input_autoComplt_enabled) {
-							
-							if (e.type == "keydown"
-								&& input_autoComplt_list.isOpen()
-								&& (e.keyCode === _CONST.keyCode.up || e.keyCode === _CONST.keyCode.down)
-							) {
-							// At the case that the hint list is open ans user is walkin thru the hints.
-							// Let's try to autocomplete the input by the selected input.
-								
-								var hint = input_autoComplt_list.getSelected();
-								
-								if (e.keyCode === _CONST.keyCode.up) {
-								
-									if (!hint) {
-									// If none is selected, then select the last hint
-										input_autoComplt_list.select(-1);												
-									} else if (hint.previousSibling) {
-									// If some hint is selected and the previous hint exists, then select the previous hint
-										input_autoComplt_list.select(hint.previousSibling);
-									} else {
-									// If some hint is selected but the previous hint doesn't exists, then deselect all
-										input_autoComplt_list.deselect();
-									}
-									
-								} else if (e.keyCode === _CONST.keyCode.down) {
-								
-									if (!hint) {
-									// If none is selected, then select the first hint
-										input_autoComplt_list.select(0);												
-									} else if (hint.nextSibling) {
-									// If some hint is selected and the next hint exists, then select the next hint
-										input_autoComplt_list.select(hint.nextSibling);
-									} else {
-									// If some hint is selected but the next hint doesn't exists, then deselect all
-										input_autoComplt_list.deselect();
-									}
-									
-								}
-								
-								input_autoComplt_list.autoScroll();
-								
-								input_autoComplt_compltInput.call(input);
 
-							}
-							else if (e.type == "keyup") {
-								
+							if (e.type == "keydown" && input_autoComplt_list.isOpen()) {
+
+								if (e.keyCode === _CONST.keyCode.up || e.keyCode === _CONST.keyCode.down) {
+								// At the case that the hint list is open ans user is walkin thru the hints.
+								// Let's try to autocomplete the input by the selected input.
+
+									var hint = input_autoComplt_list.getSelected();
+
+									if (e.keyCode === _CONST.keyCode.up) {
+
+										if (!hint) {
+										// If none is selected, then select the last hint
+											input_autoComplt_list.select(-1);
+										} else if (hint.previousSibling) {
+										// If some hint is selected and the previous hint exists, then select the previous hint
+											input_autoComplt_list.select(hint.previousSibling);
+										} else {
+										// If some hint is selected but the previous hint doesn't exists, then deselect all
+											input_autoComplt_list.deselect();
+										}
+
+									} else if (e.keyCode === _CONST.keyCode.down) {
+
+										if (!hint) {
+										// If none is selected, then select the first hint
+											input_autoComplt_list.select(0);
+										} else if (hint.nextSibling) {
+										// If some hint is selected and the next hint exists, then select the next hint
+											input_autoComplt_list.select(hint.nextSibling);
+										} else {
+										// If some hint is selected but the next hint doesn't exists, then deselect all
+											input_autoComplt_list.deselect();
+										}
+									}
+
+									input_autoComplt_list.autoScroll();
+
+									input_autoComplt_compltInput.call(input);
+								} else if (e.keyCode === _CONST.keyCode.enter) {
+									e.stopDefault();
+								}
+
+							} else if (e.type == "keyup") {
+
 								var startFetching = false;
-								
+
 								switch (e.keyCode) {
 									case _CONST.keyCode.up: case _CONST.keyCode.down:
 										if (input_autoComplt_list.isOpen()) {
@@ -765,15 +765,15 @@ var autoComplt = (function () {
 											startFetching = true;
 										}
 									break;
-									
+
 									case _CONST.keyCode.esc:
 										if (input_autoComplt_list.isOpen()) {
 											// When pressing the ESC key, let's resume back to the original user input
 											input.value = input_autoComplt_currentTarget;
 											input.autoComplt.close();
-										}										
+										}
 									break;
-									
+
 									case _CONST.keyCode.enter:
 										if (input_autoComplt_list.isOpen()) {
 											// When pressing the enter key, let's try autocomplete
@@ -781,12 +781,12 @@ var autoComplt = (function () {
 											input.autoComplt.close();
 										}
 									break;
-									
+
 									default:
 										startFetching = true;
 									break;
 								}
-								
+
 								if (startFetching) {
 									if (input.value.length > 0) {
 										input_autoComplt_startFetcher.call(input);
@@ -805,50 +805,50 @@ var autoComplt = (function () {
 					}
 					return false;
 				}
-				
+
 				input.autoComplt.config = function (params) {
 					if (params instanceof Object) {
-						
+
 						var buf,
 							pms = {};
-						
+
 						// Config the fetching delay timing
 						//
 						buf = Math.floor(params.delay);
 						if (buf > 0) {
 							input_autoComplt_delay = pms.delay = buf;
 						}
-						
+
 						// Config the max number of displayed hints
 						//
 						buf = Math.floor(params.maxHintNum);
 						if (buf > 0) {
 							input_autoComplt_list.maxHintNum = pms.maxHintNum = buf;
 						}
-						
+
 						return pms;
 					}
 					return false;
 				}
-				
-				input.autoComplt.setStyles = function (targetClass, styles) {				
-				
+
+				input.autoComplt.setStyles = function (targetClass, styles) {
+
 					var tStyles,
 						adjStyleAttrs,
 						newStyles = false;
-					
+
 					// Let's find out which the target UI part is being set
 					switch (targetClass) {
 						case _CONST.autoCompltListClass:
 							tStyles = input_autoComplt_list.styles.autoCompltList;
 							adjStyleAttrs = _CONST.adjStyleAttrs.autoCompltList;
 						break;
-						
+
 						case _CONST.autoCompltHintClass:
 							tStyles = input_autoComplt_list.styles.autoCompltHint;
 							adjStyleAttrs = _CONST.adjStyleAttrs.autoCompltHint;
 						break;
-						
+
 						case _CONST.autoCompltHintSelectedClass:
 							tStyles = input_autoComplt_list.styles.autoCompltHintSelected;
 							adjStyleAttrs = _CONST.adjStyleAttrs.autoCompltHintSelected;
@@ -856,37 +856,37 @@ var autoComplt = (function () {
 					}
 
 					if (styles instanceof Object && tStyles && adjStyleAttrs) {
-						
+
 						for (var i = 0; i < adjStyleAttrs.length; i++) {
-							
+
 							if (typeof styles[adjStyleAttrs[i]] == "string" || typeof styles[adjStyleAttrs[i]] == "number") { // A simple type checking
 								if (!newStyles) {
 									newStyles = {};
 								}
 								newStyles[adjStyleAttrs[i]] = tStyles[adjStyleAttrs[i]] = styles[adjStyleAttrs[i]];
 							}
-							
-						}						
-					
+
+						}
+
 					}
-					
+
 					return newStyles;
 				}
-				
+
 				input.autoComplt.close = function () {
 					input_autoComplt_currentTarget = ""; // Closing means no need for autocomplete hint so no autocomplete target either
 					input_autoComplt_list.close();
 				}
-				
+
 				input.autoComplt.enable = function () {
 					input_autoComplt_enabled = true;
 				}
-				
+
 				input.autoComplt.disable = function () {
 					this.close();
 					input_autoComplt_enabled = false;
 				}
-				
+
 				input.autoComplt.destroy = function () {
 					_rmEvent(input, "blur", input_autoComplt_blurEvtHandle);
 					_rmEvent(input, "keyup", input_autoComplt_keyEvtHandle);
@@ -894,21 +894,21 @@ var autoComplt = (function () {
 					this.close();
 					delete input.autoComplt;
 				}
-				
+
 				_addEvt(input, "blur", input_autoComplt_blurEvtHandle);
 				_addEvt(input, "keyup", input_autoComplt_keyEvtHandle);
 				_addEvt(input, "keydown", input_autoComplt_keyEvtHandle);
-				
+
 				if (params instanceof Object) {
 					input.autoComplt.config(params);
 					input.autoComplt.setHintsFetcher(params.hintsFetcher);
 				}
-				
+
 				return input;
 			}
 			return null;
 		}
-		
+
 	};
 
 	return publicProps;
