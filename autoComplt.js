@@ -198,6 +198,44 @@ var autoComplt = (function () {
 			elem.detachEvent("on" + evt, eHandle);
 		}
 	}
+
+  /*	Arg:
+    <string> name = name of the event
+    Return:
+    event object
+  */
+  var _createEvent = function(name) {
+    var event;
+
+    if (document.createEvent) {
+      event = document.createEvent("HTMLEvents");
+      event.initEvent(name, true, true);
+    } else {
+      event = document.createEventObject();
+      event.eventType = name;
+    }
+
+    event.eventName = name;
+
+    return event;
+  };
+
+  /*	Arg:
+    <object> el = target element
+    <object> event = event object
+    Return:
+      true
+	*/
+  var _triggerEvent = function(el, event) {
+    if (document.createEvent) {
+      el.dispatchEvent(event);
+    } else {
+      el.fireEvent("on" + event.eventType, event);
+    }
+
+    return true;
+  };
+
 	/*	Arg:
 			<ELM> elem = the DOM elem
 			<STR> name = the style name
@@ -390,7 +428,10 @@ var autoComplt = (function () {
 					e = _normalizeEvt(e);
 					if (that.isHint(e.target)) {
 						that.select(e.target);
-						that.assocInput.value = that.getSelected().innerHTML;
+            that.assocInput.value = that.getSelected().innerHTML;
+            // Trigger hintSelected event
+            var event = _createEvent('hintSelected');
+            _triggerEvent(that.assocInput, event);
 						that.assocInput.autoComplt.close();
 					}
 				});
@@ -398,6 +439,7 @@ var autoComplt = (function () {
 				document.body.appendChild(this.uiElem);
 			}
 		}
+
 		/*	Arg:
 				<ELM> el = the elem to check
 			Return:
@@ -754,7 +796,6 @@ var autoComplt = (function () {
 
 							}
 							else if (e.type == "keyup") {
-								
 								var startFetching = false;
 								
 								switch (e.keyCode) {
@@ -778,6 +819,9 @@ var autoComplt = (function () {
 										if (input_autoComplt_list.isOpen()) {
 											// When pressing the enter key, let's try autocomplete
 											input_autoComplt_compltInput.call(input);
+                      // Trigger hintSelected event
+                      var event = _createEvent('hintSelected');
+                      _triggerEvent(input, event);
 											input.autoComplt.close();
 										}
 									break;
