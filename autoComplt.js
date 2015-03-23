@@ -278,7 +278,7 @@ var autoComplt = (function () {
 		*/
 		buildHint : function (hint, styles) {
 			if (typeof hint == "string" && hint) {
-				var hint = this.buildElem('<li class="' + _CONST.autoCompltHintClass + '">' + hint + '</li>');
+				hint = this.buildElem('<li class="' + _CONST.autoCompltHintClass + '">' + hint + '</li>');
 
 				hint.style.height = hint.style.lineHeight = styles.autoCompltHint.height; // line-height shall always be equal to the height
 				hint.style.padding = styles.autoCompltHint.padding;
