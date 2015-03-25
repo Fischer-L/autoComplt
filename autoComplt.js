@@ -32,6 +32,11 @@
 		# Return:
 			@ OK: true
 			@ NG: false
+	> setListener = function (name, listener)
+		# Func : Set listener (This would replace the old listener)
+		# Arg:
+			<STR> name = Refer to the private _CONST.listenersSupported
+			<FN> listener = listener callback. The invoking context would be current input element
 	> config = function (params)
 		# Func : Config the autocomplete funciton and the styles
 		# Arg:
@@ -95,6 +100,8 @@ var autoComplt = (function () {
 */
 	var _DBG = 0; // A little debug flag
 	
+	if(!Array.prototype.indexOf){Array.prototype.indexOf=function(searchElement,fromIndex){if(this===undefined||this===null){throw new TypeError('"this" is null or not defined');}var length=this.length>>>0;fromIndex=+fromIndex||0;if(Math.abs(fromIndex)===Infinity){fromIndex=0}if(fromIndex<0){fromIndex+=length;if(fromIndex<0){fromIndex=0}}for(;fromIndex<length;fromIndex++){if(this[fromIndex]===searchElement){return fromIndex}}return-1}}
+	
 	var _CONST = {
 		
 		autoCompltListClass : "autoComplt-list",
@@ -156,7 +163,12 @@ var autoComplt = (function () {
 			autoCompltList : [ "border", "maxHeight", "backgroundColor" ],
 			autoCompltHint : [ "height", "padding", "margin", "color", "backgroundColor", "fontSize" ],
 			autoCompltHintSelected : [ "color", "backgroundColor" ]
-		}
+		},
+		
+		// names of listeners supported
+		listenersSupported : [ 
+			"select" // Called when the user's final hint selection is decided
+		]
 	};
 	/*	Arg:
 			<OBJ> e = the event obj
@@ -198,44 +210,6 @@ var autoComplt = (function () {
 			elem.detachEvent("on" + evt, eHandle);
 		}
 	}
-
-  /*	Arg:
-    <string> name = name of the event
-    Return:
-    event object
-  */
-  var _createEvent = function(name) {
-    var event;
-
-    if (document.createEvent) {
-      event = document.createEvent("HTMLEvents");
-      event.initEvent(name, true, true);
-    } else {
-      event = document.createEventObject();
-      event.eventType = name;
-    }
-
-    event.eventName = name;
-
-    return event;
-  };
-
-  /*	Arg:
-    <object> el = target element
-    <object> event = event object
-    Return:
-      true
-	*/
-  var _triggerEvent = function(el, event) {
-    if (document.createEvent) {
-      el.dispatchEvent(event);
-    } else {
-      el.fireEvent("on" + event.eventType, event);
-    }
-
-    return true;
-  };
-
 	/*	Arg:
 			<ELM> elem = the DOM elem
 			<STR> name = the style name
@@ -362,6 +336,7 @@ var autoComplt = (function () {
 			<BOO> mouseOnList = A little flag marking the moused is on the top of the autocomplete list
 			<NUM> maxHintNum = The max number of hints displayed
 			<OBJ> styles = the obj holding the style setting of the list and hints. Refer to _CONST.defaultStyles for the required styles.
+			<FN> onMouseSelectionListener = Called when user explicitly selects one hint by mouse clicking. No args passed.
 		Methods:
 			[ Public ]
 			> genList : Build and setup one autocomplete list
@@ -372,17 +347,16 @@ var autoComplt = (function () {
 			> open : Open the autocomplete list. NOTICE: before opening, there must at one hint in the list so please call this.putHints first then open.
 			> close : Close the autocomplete list
 			> autoScroll : Auto scroll the list according the position and offset of the current selected hint so the current selected hint could show up
-			> select : Selece one hint. NOTICE: this action will not change this.assocInput's value. Please use this.getSelected to get the selected hint and extract the hint text and assign this.assocInput's value the hint text
-			> deselect : Deselect all hints
-			> getSelected : Get the hint elem selected
+			> pick : Pick up one hint. NOTICE: this action is to pick up one hint but not to select that hint so it will not change this.assocInput's value. Please use this.getPicked to get the picked hint and extract the hint text and assign this.assocInput's value the hint text
+			> unpick : Unpick all hints
+			> getPicked : Get the hint elem picked
 	*/
 	var _AutoCompltList = function (assocInput) {
 
 		this.uiElem = null;
 		this.assocInput = assocInput;
 		this.mouseOnList = false;
-		this.pauseMouseoverSelection = false;
-		this.pauseMouseoutDeselection = false;
+		this.onMouseSelectionListener = null;
 		this.maxHintNum = _CONST.maxHintNum;
 		this.styles = JSON.parse(JSON.stringify(_CONST.defaultStyles)); // Copy the default first
 
@@ -400,20 +374,18 @@ var autoComplt = (function () {
 				_addEvt(this.uiElem, "mouseover", function (e) {
 					e = _normalizeEvt(e);
 					if (that.isHint(e.target)) {
-						that.select(e.target);
+						that.pick(e.target);
 						that.autoScroll();
 					}
 				});
 				
 				// Make hint not selected onmouseout
-				_addEvt(this.uiElem, "mouseout", function (e) {					
-					e = _normalizeEvt(e);
-					that.deselect();
+				_addEvt(this.uiElem, "mouseout", function (e) {
+					that.unpick();
 				});
 				
 				// Prepare for the hint selection by clicking
 				_addEvt(this.uiElem, "mousedown", function (e) {
-					e = _normalizeEvt(e);	
 					that.mouseOnList = true;						
 					// One hack for FF.
 					// Even call focus methos on the input's onblur event, however, still the input losese its focus.
@@ -423,23 +395,22 @@ var autoComplt = (function () {
 					}, 50);
 				});				
 				
-				// Select hint by clicking
+				// pick hint by clicking
 				_addEvt(this.uiElem, "mouseup", function (e) {
+				
 					e = _normalizeEvt(e);
+					
 					if (that.isHint(e.target)) {
-						that.select(e.target);
-            that.assocInput.value = that.getSelected().innerHTML;
-            // Trigger hintSelected event
-            var event = _createEvent('hintSelected');
-            _triggerEvent(that.assocInput, event);
-						that.assocInput.autoComplt.close();
+						
+						that.pick(e.target);
+						
+						if (typeof that.onMouseSelectionListener == "function") that.onMouseSelectionListener();
 					}
 				});
 				
 				document.body.appendChild(this.uiElem);
 			}
 		}
-
 		/*	Arg:
 				<ELM> el = the elem to check
 			Return:
@@ -550,7 +521,7 @@ var autoComplt = (function () {
 		/*
 		*/
 		_AutoCompltList.prototype.close = function () {
-			if (this.uiElem && !_DBG) {
+			if (this.uiElem) {
 				this.mouseOnList = false;
 				this.uiElem.parentNode.removeChild(this.uiElem);
 				this.uiElem = null;
@@ -559,7 +530,7 @@ var autoComplt = (function () {
 		/*
 		*/
 		_AutoCompltList.prototype.autoScroll = function () {
-			var hint = this.getSelected();
+			var hint = this.getPicked();
 			if (hint) {
 				var currHint,
 					offset = 0,
@@ -597,9 +568,9 @@ var autoComplt = (function () {
 		/*	Arg:
 				<ELM|NUM> candidate = could be
 				                      1) the hint elem or
-									  2) the index of the hint in the list. Passing in -1 would select the last hint. Passing in 0 would select the 1st hint.
+									  2) the index of the hint in the list. Passing in -1 would pick the last hint. Passing in 0 would pick the 1st hint.
 		*/
-		_AutoCompltList.prototype.select = function (candidate) {
+		_AutoCompltList.prototype.pick = function (candidate) {
 		
 			if (this.uiElem) {
 			
@@ -622,7 +593,7 @@ var autoComplt = (function () {
 			
 				if (hint !== null) {
 					
-					this.deselect();					
+					this.unpick();					
 					hint.className += " " + _CONST.autoCompltHintSelectedClass;
 					hint.style.color = this.styles.autoCompltHintSelected.color;
 					hint.style.backgroundColor = this.styles.autoCompltHintSelected.backgroundColor;					
@@ -631,9 +602,9 @@ var autoComplt = (function () {
 		}
 		/*
 		*/
-		_AutoCompltList.prototype.deselect = function () {
+		_AutoCompltList.prototype.unpick = function () {
 			if (this.uiElem) {
-				var slct = this.getSelected();
+				var slct = this.getPicked();
 				if (slct) {
 					slct.className = _CONST.autoCompltHintClass;
 					slct.style.color = this.styles.autoCompltHint.color;
@@ -645,12 +616,13 @@ var autoComplt = (function () {
 				@ OK: <ELM> the selected hint element
 				@ NG: null
 		*/
-		_AutoCompltList.prototype.getSelected = function () {
+		_AutoCompltList.prototype.getPicked = function () {
 			return !this.uiElem ? null : this.uiElem.querySelector("." + _CONST.autoCompltHintSelectedClass) || null;
 		}
 	}
 
 	var publicProps = {
+	
 		enable : function (input, params) {
 			if (   input
 				&& typeof input == "object"
@@ -666,6 +638,7 @@ var autoComplt = (function () {
 						<NUM> input_autoComplt_delay = the ms delays the work of fetching the autocomplete hints based on the user's input
 						<BOO> input_autoComplt_enabled = true to perform the autocomplete function; false not to perform.
 						<STR> input_autoComplt_currentTarget = the current user's input for which the autocomplete is target
+						<OBJ> input_autoComplt_listenerMap = the map of listeners
 						<OBJ> input_autoComplt_list = the instance of _AutoCompltList
 					Methods:
 						[ Private ]
@@ -674,7 +647,7 @@ var autoComplt = (function () {
 						> input_autoComplt_compltInput : Autocomplete the <input> according to the hint selection state
 						> input_autoComplt_blurEvtHandle, input_autoComplt_keyEvtHandle : The event handle
 						[ Public ]
-						> setHintsFetcher, config, setStyles, close, enable, disable, destroy : Refe to the Public APIs above
+						> setHintsFetcher, setListener, config, setStyles, close, enable, disable, destroy : Refe to the Public APIs above
 				*/
 				input.autoComplt = {};
 				
@@ -682,6 +655,7 @@ var autoComplt = (function () {
 					input_autoComplt_enabled = true,
 					input_autoComplt_currentTarget = "",
 					input_autoComplt_hintsFetcher = null,
+					input_autoComplt_listenerMap = null,
 					input_autoComplt_list = new _AutoCompltList(input),
 					/*
 					*/
@@ -724,8 +698,11 @@ var autoComplt = (function () {
 					/*
 					*/
 					input_autoComplt_compltInput= function () {
+					
 						if (input_autoComplt_enabled) {
-							var hint = input_autoComplt_list.getSelected();
+						
+							var hint = input_autoComplt_list.getPicked();
+							
 							if (hint) {
 								this.value = hint.innerHTML;
 							} else {
@@ -737,7 +714,7 @@ var autoComplt = (function () {
 					/*
 					*/
 					input_autoComplt_blurEvtHandle = function (e) {
-						e = _normalizeEvt(e);
+					
 						if (input_autoComplt_list.mouseOnList) {
 						// If the mouse is on the autocomplete list, do not close the list
 						// and still need to focus on the input.
@@ -750,42 +727,44 @@ var autoComplt = (function () {
 					/*
 					*/
 					input_autoComplt_keyEvtHandle = function (e) {
+					
 						e = _normalizeEvt(e);
+						
 						if (input_autoComplt_enabled) {
 							
-							if (e.type == "keydown"
+							if (   e.type == "keydown"
 								&& input_autoComplt_list.isOpen()
 								&& (e.keyCode === _CONST.keyCode.up || e.keyCode === _CONST.keyCode.down)
 							) {
-							// At the case that the hint list is open ans user is walkin thru the hints.
+							// At the case that the hint list is open ans user is walking thru the hints.
 							// Let's try to autocomplete the input by the selected input.
 								
-								var hint = input_autoComplt_list.getSelected();
+								var hint = input_autoComplt_list.getPicked();
 								
 								if (e.keyCode === _CONST.keyCode.up) {
 								
 									if (!hint) {
-									// If none is selected, then select the last hint
-										input_autoComplt_list.select(-1);												
+									// If none is selected, then pick the last hint
+										input_autoComplt_list.pick(-1);												
 									} else if (hint.previousSibling) {
-									// If some hint is selected and the previous hint exists, then select the previous hint
-										input_autoComplt_list.select(hint.previousSibling);
+									// If some hint is selected and the previous hint exists, then pick the previous hint
+										input_autoComplt_list.pick(hint.previousSibling);
 									} else {
-									// If some hint is selected but the previous hint doesn't exists, then deselect all
-										input_autoComplt_list.deselect();
+									// If some hint is selected but the previous hint doesn't exists, then unpick all
+										input_autoComplt_list.unpick();
 									}
 									
 								} else if (e.keyCode === _CONST.keyCode.down) {
 								
 									if (!hint) {
-									// If none is selected, then select the first hint
-										input_autoComplt_list.select(0);												
+									// If none is selected, then pick the first hint
+										input_autoComplt_list.pick(0);												
 									} else if (hint.nextSibling) {
-									// If some hint is selected and the next hint exists, then select the next hint
-										input_autoComplt_list.select(hint.nextSibling);
+									// If some hint is selected and the next hint exists, then pick the next hint
+										input_autoComplt_list.pick(hint.nextSibling);
 									} else {
-									// If some hint is selected but the next hint doesn't exists, then deselect all
-										input_autoComplt_list.deselect();
+									// If some hint is selected but the next hint doesn't exists, then unpick all
+										input_autoComplt_list.unpick();
 									}
 									
 								}
@@ -796,6 +775,7 @@ var autoComplt = (function () {
 
 							}
 							else if (e.type == "keyup") {
+								
 								var startFetching = false;
 								
 								switch (e.keyCode) {
@@ -819,9 +799,6 @@ var autoComplt = (function () {
 										if (input_autoComplt_list.isOpen()) {
 											// When pressing the enter key, let's try autocomplete
 											input_autoComplt_compltInput.call(input);
-                      // Trigger hintSelected event
-                      var event = _createEvent('hintSelected');
-                      _triggerEvent(input, event);
 											input.autoComplt.close();
 										}
 									break;
@@ -840,14 +817,34 @@ var autoComplt = (function () {
 								}
 							}
 						}
+					},
+					/*	Arg:
+							<STR> name = Refer to _CONST.listenersSupported
+					*/
+					input_autoComplt_invokeListner = function (name) {
+						
+						if (input_autoComplt_listenerMap != null && typeof input_autoComplt_listenerMap[name] == "function") { 
+							
+							input_autoComplt_listenerMap[name].call(input);
+						}
 					};
-
+					
 				input.autoComplt.setHintsFetcher = function (hintsFetcher) {
 					if (typeof hintsFetcher == "function") {
 						input_autoComplt_hintsFetcher = hintsFetcher;
 						return true;
 					}
 					return false;
+				}
+				
+				input.autoComplt.setListener = function (name, listener) {
+					
+					if ( typeof listener == "function" && _CONST.listenersSupported.indexOf(name) >= 0) {
+						
+						if (input_autoComplt_listenerMap == null) input_autoComplt_listenerMap = {};
+						
+						input_autoComplt_listenerMap[name] = listener;
+					}
 				}
 				
 				input.autoComplt.config = function (params) {
@@ -918,8 +915,15 @@ var autoComplt = (function () {
 				}
 				
 				input.autoComplt.close = function () {
+				
 					input_autoComplt_currentTarget = ""; // Closing means no need for autocomplete hint so no autocomplete target either
+					
 					input_autoComplt_list.close();
+					
+					if (input_autoComplt_enabled && input.value !== "") {
+					
+						input_autoComplt_invokeListner("select");
+					}
 				}
 				
 				input.autoComplt.enable = function () {
@@ -927,16 +931,23 @@ var autoComplt = (function () {
 				}
 				
 				input.autoComplt.disable = function () {
-					this.close();
 					input_autoComplt_enabled = false;
+					this.close();
 				}
 				
 				input.autoComplt.destroy = function () {
 					_rmEvent(input, "blur", input_autoComplt_blurEvtHandle);
 					_rmEvent(input, "keyup", input_autoComplt_keyEvtHandle);
 					_rmEvent(input, "keydown", input_autoComplt_keyEvtHandle);
-					this.close();
+					this.disable();
 					delete input.autoComplt;
+				}
+				
+				input_autoComplt_list.onMouseSelectionListener = function () {
+					
+					input_autoComplt_compltInput.call(input);
+					
+					input.autoComplt.close();
 				}
 				
 				_addEvt(input, "blur", input_autoComplt_blurEvtHandle);
