@@ -25,10 +25,10 @@
 		# Func : Setup the callback to fetch the autocomplete hint. Setting to null is equivalent to remove
 		# Arg:
 			<FN> hintsFetcher = while user inputs sth, this hintsFetcher function would be invoked with 2 args.
-			                   The 1st one is the user's input value(text). Please go fetching your autocomplete hints based the user's value
-							   The 2nd one is one callback. Calling this callback would open the autocomplete list. This callback MUST be passed in the array of the hint texts or nothing happens.
-							   So after fetching your autocomplete hints please call the 2nd arg callback to open the autocomplete list.
-							   If the hintsFetcher function is not set, no autocomplete funciton works.
+			                    The 1st one is the user's input value(text). Please go fetching your autocomplete hints based the user's value
+							    The 2nd one is one callback. Calling this callback would open the autocomplete list. This callback MUST be passed in the array of the hint texts or nothing happens.
+							    So after fetching your autocomplete hints please call the 2nd arg callback to open the autocomplete list.
+							    If the hintsFetcher function is not set, no autocomplete funciton works.
 		# Return:
 			@ OK: true
 			@ NG: false
@@ -663,37 +663,50 @@ var autoComplt = (function () {
 					/*
 					*/
 					input_autoComplt_startFetcher = function () {
-						if (this.value.length > 0
+					
+						if (   this.value.length > 0
 							&& input_autoComplt_enabled
 							&& typeof input_autoComplt_hintsFetcher == "function"
 							&& input_autoComplt_currentTarget !== this.value // If equals, it means we've already been searching for the hints for the same value
 						) {
-							var fetcherCaller = {};
-							
-							fetcherCaller.call = function () {
-								input_autoComplt_hintsFetcher.call(
-									fetcherCaller.that,
-									fetcherCaller.compltTarget,
-									fetcherCaller.openHint
-								);
-							};
-							
-							fetcherCaller.that = input;
-							
-							// Record the autocomplete target for this fetching job
-							fetcherCaller.compltTarget = input_autoComplt_currentTarget = this.value;
-							
-							fetcherCaller.openHint = function (hints) {
-								// If the user's input has changed during the fetching, this fetching job is useless.
-								// So only when the user's input doesn't change, we will proceed further.
-								if (fetcherCaller.compltTarget === input_autoComplt_currentTarget) {							
-									if (input_autoComplt_list.putHints(hints)) {
-										input_autoComplt_list.open();
-									} else {
-										fetcherCaller.that.autoComplt.close();
+						
+							var fetcherCaller = {
+								
+								that : this,								
+								
+								// Record the autocomplete target for this fetching job
+								compltTarget : (input_autoComplt_currentTarget = this.value),
+								
+								compltTargetMatchCurrentTarget : function () {
+									// If the user's input has changed during the fetching, this fetching job is useless.
+									// So only when the user's input doesn't change, we will return true to indicate proceeding further.
+									return (fetcherCaller.compltTarget === input_autoComplt_currentTarget);
+								},
+								
+								call : function () {
+									
+									if (fetcherCaller.compltTargetMatchCurrentTarget()) {
+									
+										input_autoComplt_hintsFetcher.call(
+											fetcherCaller.that,
+											fetcherCaller.compltTarget,
+											fetcherCaller.openHint
+										);
 									}
-								}
-							}
+								},
+								
+								openHint : function (hints) {
+								
+									if (fetcherCaller.compltTargetMatchCurrentTarget()) {
+									
+										if (input_autoComplt_list.putHints(hints)) {
+											input_autoComplt_list.open();
+										} else {
+											fetcherCaller.that.autoComplt.close();
+										}
+									}
+								}								
+							};							
 							
 							setTimeout(fetcherCaller.call, input_autoComplt_delay);
 						}
