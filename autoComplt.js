@@ -22,7 +22,7 @@
 	[ input.autoComplt ]
 	After enabling, the <input> would be attached one autoComplt obj. Use the autoComplt obj to control the autocomplete function
 	> setHintsFetcher = function (hintsFetcher)
-		# Func : Setup the callback to fetch the autocomplete hint.
+		# Func : Setup the callback to fetch the autocomplete hint. Setting to null is equivalent to remove
 		# Arg:
 			<FN> hintsFetcher = while user inputs sth, this hintsFetcher function would be invoked with 2 args.
 			                   The 1st one is the user's input value(text). Please go fetching your autocomplete hints based the user's value
@@ -33,10 +33,13 @@
 			@ OK: true
 			@ NG: false
 	> setListener = function (name, listener)
-		# Func : Set listener (This would replace the old listener)
+		# Func : Set listener. This would replace the old listener so setting to null is equivalent to remove
 		# Arg:
 			<STR> name = Refer to the private _CONST.listenersSupported
 			<FN> listener = listener callback. The invoking context would be current input element
+		# Return:
+			@ OK: true
+			@ NG: false
 	> config = function (params)
 		# Func : Config the autocomplete funciton and the styles
 		# Arg:
@@ -830,7 +833,7 @@ var autoComplt = (function () {
 					};
 					
 				input.autoComplt.setHintsFetcher = function (hintsFetcher) {
-					if (typeof hintsFetcher == "function") {
+					if (hintsFetcher === null || typeof hintsFetcher == "function") {
 						input_autoComplt_hintsFetcher = hintsFetcher;
 						return true;
 					}
@@ -839,12 +842,16 @@ var autoComplt = (function () {
 				
 				input.autoComplt.setListener = function (name, listener) {
 					
-					if ( typeof listener == "function" && _CONST.listenersSupported.indexOf(name) >= 0) {
+					if ((listener === null || typeof listener == "function") && _CONST.listenersSupported.indexOf(name) >= 0) {
 						
 						if (input_autoComplt_listenerMap == null) input_autoComplt_listenerMap = {};
 						
 						input_autoComplt_listenerMap[name] = listener;
+						
+						return true;
 					}
+					
+					return false;
 				}
 				
 				input.autoComplt.config = function (params) {
