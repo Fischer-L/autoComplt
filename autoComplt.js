@@ -115,7 +115,7 @@ var autoComplt = (function () {
 		
 		maxHintNum : 10,
 		
-		autoCompltDelay : 100, // in ms
+		autoCompltDelay : 250, // in ms
 		
 		listStatus : {
 			attr : "data-listStatus",
