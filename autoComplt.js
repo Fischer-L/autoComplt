@@ -117,6 +117,8 @@ var autoComplt = (function () {
 		
 		autoCompltDelay : 250, // in ms
 		
+		hiddenArg_close_list_n_make_final_selection : "hiddenArg_close_list_n_make_final_selection",
+		
 		listStatus : {
 			attr : "data-listStatus",
 			open : "open",
@@ -737,7 +739,7 @@ var autoComplt = (function () {
 							input.focus();
 							input_autoComplt_list.mouseOnList = false; // Assign false for the next detection
 						} else {
-							input.autoComplt.close();
+							input.autoComplt.close(_CONST.hiddenArg_close_list_n_make_final_selection);
 						}
 					},
 					/*
@@ -807,7 +809,7 @@ var autoComplt = (function () {
 										if (input_autoComplt_list.isOpen()) {
 											// When pressing the ESC key, let's resume back to the original user input
 											input.value = input_autoComplt_currentTarget;
-											input.autoComplt.close();
+											input.autoComplt.close(_CONST.hiddenArg_close_list_n_make_final_selection);
 										}										
 									break;
 									
@@ -815,7 +817,7 @@ var autoComplt = (function () {
 										if (input_autoComplt_list.isOpen()) {
 											// When pressing the enter key, let's try autocomplete
 											input_autoComplt_compltInput();
-											input.autoComplt.close();
+											input.autoComplt.close(_CONST.hiddenArg_close_list_n_make_final_selection);
 										}
 									break;
 									
@@ -940,7 +942,10 @@ var autoComplt = (function () {
 					
 					input_autoComplt_list.close();
 					
-					if (input_autoComplt_enabled && input.value !== "") {
+					if (   input_autoComplt_enabled
+					    && input.value !== ""
+						&& arguments[0] === _CONST.hiddenArg_close_list_n_make_final_selection
+					) {
 					
 						input_autoComplt_invokeListener("select");
 					}
@@ -967,7 +972,7 @@ var autoComplt = (function () {
 					
 					input_autoComplt_compltInput();
 					
-					input.autoComplt.close();
+					input.autoComplt.close(_CONST.hiddenArg_close_list_n_make_final_selection);
 				}
 				
 				_addEvt(input, "blur", input_autoComplt_blurEvtHandle);

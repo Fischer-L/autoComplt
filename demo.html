@@ -48,6 +48,10 @@
 				openCallback(hints);
 			},
 			
+			onSelectListener = function () {
+				console.log("onSelectListener : " + this.value);
+			},
+			
 			test = { // Just for the quick unit test
 				cases : [],
 				addCase : function (name, func) {
@@ -184,13 +188,12 @@
 		test.addCase("setListener", function () {
 			
 			var cases = [
-			
-				{ name : "select",   listener : function () {}, expect : true },
-				{ name : "select",   listener : null,           expect : true },
-				{ name : "onselect", listener : function () {}, expect : false },
-				{ name : "onselect", listener : null,           expect : false },
-				{ name : "select",   listener : {},             expect : false }
-				
+				{ name : "onselect", listener : function () {},   expect : false },
+				{ name : "onselect", listener : null,             expect : false },
+				{ name : "select",   listener : {},               expect : false },			
+				{ name : "select",   listener : function () {},   expect : true },
+				{ name : "select",   listener : null,             expect : true },			
+				{ name : "select",   listener : onSelectListener, expect : true },
 			];
 			
 			for (var i = 0; i < cases.length; i++) {				
