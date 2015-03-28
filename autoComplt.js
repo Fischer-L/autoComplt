@@ -40,16 +40,6 @@
 		# Return:
 			@ OK: true
 			@ NG: false
-	> config = function (params)
-		# Func : Config the autocomplete funciton and the styles
-		# Arg:
-			<OBJ> params = {
-					<NUM> delay : the ms delays the work of fetching the autocomplete hints based on the user's input. Default is 100.
-					<NUM> maxHintNum : the max number of hints displayed. Default is 10
-				  }
-		# Return:
-			@ OK: <OBJ> An obj carrying the configs which just has been changed during the call. You could use it to check out whether the config action is successful or not
-			@ NG: false
 	> setStyle = function (targetClass, styles)
 		# Func : Set the autocomplete list's ui styles
 		# Arg:
@@ -69,6 +59,16 @@
 				  }
 		# Return: 
 			@ OK: <OBJ> An obj carrying the new styles' value which just has been set during the call. 
+			@ NG: false
+	> config = function (params)
+		# Func : Config the autocomplete funciton and the styles
+		# Arg:
+			<OBJ> params = {
+					<NUM> delay : the ms delays the work of fetching the autocomplete hints based on the user's input. Default is 100.
+					<NUM> maxHintNum : the max number of hints displayed. Default is 10
+				  }
+		# Return:
+			@ OK: <OBJ> An obj carrying the configs which just has been changed during the call. You could use it to check out whether the config action is successful or not
 			@ NG: false
 	> close = function ()
 		# Func : Close the autocomplete list
@@ -664,18 +664,18 @@ var autoComplt = (function () {
 					*/
 					input_autoComplt_startFetcher = function () {
 					
-						if (   this.value.length > 0
+						if (   input.value.length > 0
 							&& input_autoComplt_enabled
 							&& typeof input_autoComplt_hintsFetcher == "function"
-							&& input_autoComplt_currentTarget !== this.value // If equals, it means we've already been searching for the hints for the same value
+							&& input_autoComplt_currentTarget !== input.value // If equals, it means we've already been searching for the hints for the same value
 						) {
 						
 							var fetcherCaller = {
 								
-								that : this,								
+								that : input,								
 								
 								// Record the autocomplete target for this fetching job
-								compltTarget : (input_autoComplt_currentTarget = this.value),
+								compltTarget : (input_autoComplt_currentTarget = input.value),
 								
 								compltTargetMatchCurrentTarget : function () {
 									// If the user's input has changed during the fetching, this fetching job is useless.
@@ -720,10 +720,10 @@ var autoComplt = (function () {
 							var hint = input_autoComplt_list.getPicked();
 							
 							if (hint) {
-								this.value = hint.innerHTML;
+								input.value = hint.innerHTML;
 							} else {
 							// If no hint is selected, just use the original user input to autocomplete
-								this.value = input_autoComplt_currentTarget;
+								input.value = input_autoComplt_currentTarget;
 							}
 						}
 					},
@@ -787,7 +787,7 @@ var autoComplt = (function () {
 								
 								input_autoComplt_list.autoScroll();
 								
-								input_autoComplt_compltInput.call(input);
+								input_autoComplt_compltInput();
 
 							}
 							else if (e.type == "keyup") {
@@ -814,7 +814,7 @@ var autoComplt = (function () {
 									case _CONST.keyCode.enter:
 										if (input_autoComplt_list.isOpen()) {
 											// When pressing the enter key, let's try autocomplete
-											input_autoComplt_compltInput.call(input);
+											input_autoComplt_compltInput();
 											input.autoComplt.close();
 										}
 									break;
@@ -826,7 +826,7 @@ var autoComplt = (function () {
 								
 								if (startFetching) {
 									if (input.value.length > 0) {
-										input_autoComplt_startFetcher.call(input);
+										input_autoComplt_startFetcher();
 									} else {
 										input.autoComplt.close();
 									}
@@ -837,7 +837,7 @@ var autoComplt = (function () {
 					/*	Arg:
 							<STR> name = Refer to _CONST.listenersSupported
 					*/
-					input_autoComplt_invokeListner = function (name) {
+					input_autoComplt_invokeListener = function (name) {
 						
 						if (input_autoComplt_listenerMap != null && typeof input_autoComplt_listenerMap[name] == "function") { 
 							
@@ -864,31 +864,6 @@ var autoComplt = (function () {
 						return true;
 					}
 					
-					return false;
-				}
-				
-				input.autoComplt.config = function (params) {
-					if (params instanceof Object) {
-						
-						var buf,
-							pms = {};
-						
-						// Config the fetching delay timing
-						//
-						buf = Math.floor(params.delay);
-						if (buf > 0) {
-							input_autoComplt_delay = pms.delay = buf;
-						}
-						
-						// Config the max number of displayed hints
-						//
-						buf = Math.floor(params.maxHintNum);
-						if (buf > 0) {
-							input_autoComplt_list.maxHintNum = pms.maxHintNum = buf;
-						}
-						
-						return pms;
-					}
 					return false;
 				}
 				
@@ -934,6 +909,31 @@ var autoComplt = (function () {
 					return newStyles;
 				}
 				
+				input.autoComplt.config = function (params) {
+					if (params instanceof Object) {
+						
+						var buf,
+							pms = {};
+						
+						// Config the fetching delay timing
+						//
+						buf = Math.floor(params.delay);
+						if (buf > 0) {
+							input_autoComplt_delay = pms.delay = buf;
+						}
+						
+						// Config the max number of displayed hints
+						//
+						buf = Math.floor(params.maxHintNum);
+						if (buf > 0) {
+							input_autoComplt_list.maxHintNum = pms.maxHintNum = buf;
+						}
+						
+						return pms;
+					}
+					return false;
+				}
+				
 				input.autoComplt.close = function () {
 				
 					input_autoComplt_currentTarget = ""; // Closing means no need for autocomplete hint so no autocomplete target either
@@ -942,7 +942,7 @@ var autoComplt = (function () {
 					
 					if (input_autoComplt_enabled && input.value !== "") {
 					
-						input_autoComplt_invokeListner("select");
+						input_autoComplt_invokeListener("select");
 					}
 				}
 				
@@ -965,7 +965,7 @@ var autoComplt = (function () {
 				
 				input_autoComplt_list.onMouseSelectionListener = function () {
 					
-					input_autoComplt_compltInput.call(input);
+					input_autoComplt_compltInput();
 					
 					input.autoComplt.close();
 				}
