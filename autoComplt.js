@@ -83,7 +83,7 @@
 		# Func : Destroy the autocomplete function. Unlike this.disable which could be enabled again, this is going to eliminate all the functions.
 		# Return: n/a
 *******************************************************************************************/
-var autoComplt = (function () {
+var autoComplt = module.exports = (function () {
 /*	Properties:
 		[ Private ]
 		<OBJ> _CONST = the constants collection
