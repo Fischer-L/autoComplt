@@ -1,0 +1,22 @@
+# Version: 0.2.0
+
+# Date: 2015.03.29
+
+# Items:
+    > UPDATE the folder structure for the grunt file and min js file
+
+# Future improvements:
+    > Set up a more systematic unit test
+
+------------------------------------------------------
+# Version: 0.1.0
+
+# Date: 2015.03.28
+
+# Items:
+    > ADD the listener mechanism and the select listener
+	> FIX the waste calling of hintsFetcher
+
+# Future improvements in consideration:
+    > Set up a more systematic unit test
+    

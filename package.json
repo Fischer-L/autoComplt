@@ -1,0 +1,25 @@
+{
+	"name" : "autoComplt",
+
+	"version" : "1.1.0",
+
+	"devDependencies" : {
+		"grunt": "^0.4.5",
+		"grunt-contrib-uglify": "~0.5.0"
+	},
+	
+	"author" : {
+		"name" : "Fischer-L",
+		"url" : "https://github.com/Fischer-L"
+	},
+	
+	"contributors": [
+		"Fischer-L",
+		"Sergey Khaladzinski <> (https://github.com/gansbrest)"
+	],
+	
+	"repository" : {
+		"type" : "git",		  
+		"url" : "https://github.com/Fischer-L/autoComplt"
+	}
+}
