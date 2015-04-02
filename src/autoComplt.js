@@ -182,13 +182,17 @@ var autoComplt = (function () {
 		Return:
 			<OBJ> the normalized event obj
 	*/
-	var _normalizeEvt = function (e) {					
-		e = e || window.event;
-		e.target = e.target || e.srcElement;
+	var _normalizeEvt = function (e) {
+		
+		if (!e) e = window.event;
+		
+		if (!e.target) e.target = e.srcElement;
+		
 		e.stopBubble = function () {
 			this.cancelBubble = true;
 			if (this.stopPropoagation) { this.stopPropoagation(); }
 		}
+		
 		e.stopDefault = function () {
 			if (this.preventDefault) { this.preventDefault(); }
 			this.returnValue = false;
@@ -741,7 +745,10 @@ var autoComplt = (function () {
 							input.focus();
 							input_autoComplt_list.mouseOnList = false; // Assign false for the next detection
 						} else {
-							input.autoComplt.close(_CONST.hiddenArg_close_list_n_make_final_selection);
+							
+							if (input_autoComplt_list.isOpen()) {
+								input.autoComplt.close(_CONST.hiddenArg_close_list_n_make_final_selection);
+							}
 						}
 					},
 					/*
