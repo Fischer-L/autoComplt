@@ -310,7 +310,7 @@ var autoComplt = (function () {
 				return hint;
 			}
 			return null;
-		},				
+		},
 		/*	Arg:
 				<OBJ> styles = the obk holding the styles to set. Refer to _CONST.defaultStyles.autoCompltList for the required styles
 			Return:
@@ -319,7 +319,7 @@ var autoComplt = (function () {
 		*/
 		buildList : function (styles) {
 			var list = this.buildElem('<ul class="' + _CONST.autoCompltListClass + '"></ul>');
-			
+
 			list.style.maxHeight = styles.autoCompltList.maxHeight;
 			list.style.border = styles.autoCompltList.border;	
 			list.style.padding = styles.autoCompltList.padding;

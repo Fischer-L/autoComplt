@@ -1,9 +1,21 @@
 module.exports = function(grunt) {
 
-    // Project configuration.
+	// Project configuration.
 	grunt.initConfig({
 
 		pkg: grunt.file.readJSON('package.json'),
+		
+		watch : {
+			
+			options : {			
+				cwd : "<%= uglify.js_min.cwd %>"
+			},
+			
+			uglify : {				
+				tasks : "uglify:js_min",			
+				files : [ "<%= uglify.js_min.src %>", "!*<%= uglify.js_min.ext %>" ]
+			}
+		},
 		
 		uglify : {
 			js_min : {
@@ -16,10 +28,11 @@ module.exports = function(grunt) {
 		}
 	});
 
-  // Load the plugins
-  grunt.loadNpmTasks('grunt-contrib-uglify');
+	// Load the plugins
+	grunt.loadNpmTasks('grunt-contrib-watch');
+	grunt.loadNpmTasks('grunt-contrib-uglify');
 
-  // Default task(s).
-  grunt.registerTask('default', ['uglify']);
+	// Default task(s).
+	grunt.registerTask('default', ['watch']);
 
 };
