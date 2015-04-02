@@ -912,28 +912,32 @@ var autoComplt = (function () {
 				}
 				
 				input.autoComplt.config = function (params) {
+					
+					var pms = false;
+					
 					if (params instanceof Object) {
 						
-						var buf,
-							pms = {};
+						var buf;
 						
 						// Config the fetching delay timing
 						//
-						buf = Math.floor(params.delay);
-						if (buf > 0) {
+						if (params.delay !== undefined && (buf = Math.floor(params.delay)) > 0) {
+						
+							if (!pms) pms = {};
+							
 							input_autoComplt_delay = pms.delay = buf;
 						}
 						
 						// Config the max number of displayed hints
 						//
-						buf = Math.floor(params.maxHintNum);
-						if (buf > 0) {
+						if (params.maxHintNum !== undefined && (buf = Math.floor(params.maxHintNum)) > 0) {
+						
+							if (!pms) pms = {};
+							
 							input_autoComplt_list.maxHintNum = pms.maxHintNum = buf;
 						}
-						
-						return pms;
 					}
-					return false;
+					return pms;
 				}
 				
 				input.autoComplt.close = function () {

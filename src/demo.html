@@ -2,9 +2,14 @@
 <html>
 
 <head>
+	<link rel="stylesheet" media="all" href="../lib/mocha.css">
 	<style>
 		body, input {
 			font-size: 14px;
+		}
+		#inputsHolder {
+			width : 100%;
+			display: none;
 		}
 		.autoCmplt-input {
 			height: 2em;
@@ -21,189 +26,657 @@
 </head>
 
 <body>
-	<input class="autoCmplt-input input-0" type="text" placeholder="Please key in some text.">
-	<input class="autoCmplt-input input-1" type="text" placeholder="Please key in some text.">
-	<input class="autoCmplt-input input-2" type="text" placeholder="Please key in some text.">
-	<script type="text/javascript" src="autoComplt.js"></script>
-	<script>
-	
-		var inputs = document.querySelectorAll("input"),
 
-			hintsFetcher = function (v, openCallback) {
-				var i,
-					hints = [],
-					words = [
-						"Abyssinian", "Ainu Dog", "Alligator", "Barb", "Bloodhound",
-						"Chinook", "Cougar", "Dingo", "Dormouse", "Earwig",
-						"Emperor Tamarin", "Falcon", "Fennec Fox", "Gecko", "German Shepherd",
-						"Hammerhead Shark", "Hermit Crab", "Iguana", "Javan Rhinoceros", "Lion"
-					];
-					
-				for (i = 0; i < words.length; i++) {
-					if (words[i].indexOf(v) >= 0) {
-						hints.push(words[i]);
-					}
-				}
+	<div id="mocha"></div>
+	
+	<div id="inputsHolder">
+		<input class="autoCmplt-input input-0" type="text" placeholder="Please key in some text.">
+		<input class="autoCmplt-input input-1" type="text" placeholder="Please key in some text.">
+		<input class="autoCmplt-input input-2" type="text" placeholder="Please key in some text.">
+	<div>
+	
+	<script type="text/javascript" src="autoComplt.js"></script>
+	<script src="../lib/mocha.js"></script>
+	<script src="../lib/proclaim.js"></script>
+	
+	<script>
+		
+		var mochaTest = {
+			
+				flag_run_mocha_tests : 1,
 				
-				openCallback(hints);
-			},
-			
-			onSelectListener = function () {
-				console.log("onSelectListener : " + this.value);
-			},
-			
-			test = { // Just for the quick unit test
-				cases : [],
-				addCase : function (name, func) {
-					this.cases.push({ name : name, func : func});
-				},
-				runCases : function () {
-					for (var i = 0, c; i < this.cases.length; i++) {
-						c = this.cases[i];
-						if (c.func()) {
-							console.log("Pass on the %s test", c.name);
-						} else {
-							console.log("Fail on the %s test", c.name);
+				flag_state_pass : "passed",
+				
+				flag_isPass : true,
+				
+				suites : [],
+				
+				isPass : function (suite) {				
+					
+					if (suite instanceof Object) {
+					
+						var i;
+								
+						for (i = suite.tests.length - 1; i >= 0; i--) {
+														
+							if (suite.tests[i].state !== this.flag_state_pass) return (this.flag_isPass = false);
+						}
+													
+						for (i = suite.suites.length - 1; i >= 0; i--) {
+														
+							if (!this.isPass(suite.suites[i])) return this.flag_isPass;
 						}
 					}
-				}
-			};
-		
-		test.addCase("enable_input-0", function () {			
-			return !!autoComplt.enable(inputs[0], {					
-						hintsFetcher : hintsFetcher
-					 });
-		});
-		test.addCase("enable_input-1", function () {			
-			return !!autoComplt.enable(inputs[1]);
-		});
-		test.addCase("enable_input-2", function () {
-			return !!autoComplt.enable(inputs[2],
-						{
-							hintsFetcher : hintsFetcher,
-							maxHintNum : 6
-						}
-					 );
-		});
-		test.addCase("setHintsFetcher", function () {
-			
-			var cases = [
-			
-				{ fetcher : 1,              expect : false },
-				{ fetcher : null,           expect : false },
-				{ fetcher : "function",     expect : false },
-				{ fetcher : function () {}, expect : true },
-				{ fetcher : null,           expect : true },
-				{ fetcher : hintsFetcher,   expect : true }
-				
-			];
-			
-			for (var i = 0; i < cases.length; i++) {				
-				if (inputs[0].autoComplt.setHintsFetcher(cases[i].fetcher) !== cases[i].expect) return false;				
-			}
-			
-			return true;
-		});
-		test.addCase("config", function () {
-			var toset = {
-					delay : 300,
-					maxHintNum : 5
-				},
-				set = inputs[2].autoComplt.config(toset);
-			
-			return !!(toset.delay === set.delay && toset.maxHintNum === set.maxHintNum);
-		});
-		test.addCase("setStyles", function () {
-		
-			var i,
-				j,
-				tmp,
-				input,
-				targets,
-				styles,
-				setStyles = function () {				
-					for (i = 0; i < targets.length; i++) {
-						
-						tmp = {};
-						for (j = 0; j < styles[targets[i]].attrs.length; j++) {
-							tmp[styles[targets[i]].attrs[j]] = styles[targets[i]].values[j];
-						}				
 					
-						tmp = input.autoComplt.setStyles(targets[i], tmp);
-						
-						for (j = 0; j < styles[targets[i]].attrs.length; j++) {
+					return this.flag_isPass;
+				}
+			},
+			
+			setupDemo = function (mochaErr) {
+		
+				if (!mochaErr && mochaTest.isPass(mocha.suite)) {
+			
+					var inputs = document.querySelectorAll("#inputsHolder input"),
+					
+						hintsFetcher = function (v, openCallback) {
+				
+							var i,
+								hints = [],
+								words = [
+									"Abyssinian", "Ainu Dog", "Alligator", "Barb", "Bloodhound",
+									"Chinook", "Cougar", "Dingo", "Dormouse", "Earwig",
+									"Emperor Tamarin", "Falcon", "Fennec Fox", "Gecko", "German Shepherd",
+									"Hammerhead Shark", "Hermit Crab", "Iguana", "Javan Rhinoceros", "Lion"
+								];
+								
+							for (i = 0; i < words.length; i++) {
+								if (words[i].indexOf(v) >= 0) {
+									hints.push(words[i]);
+								}
+							}
 							
-							if (tmp[styles[targets[i]].attrs[j]] !== styles[targets[i]].values[j]) {
-								return false;
-							}					
+							openCallback(hints);
+						},
+						
+						onSelectListener = function () {
+							console.log("onSelectListener : " + this.value);
+						},						
+						
+						configs = [
+							
+							null,
+							
+							null,
+							
+							{
+								maxHintNum : 6
+							}						
+						],
+						
+						styles = [
+						
+							null,
+							
+							{
+								"autoComplt-list" : {
+									maxHeight : "8em",
+									border : "4px dotted green"
+								},
+								"autoComplt-hint-selected" : {
+									color : "blue",
+									backgroundColor : "yellow"
+								},
+								"autoComplt-hint" : {
+									margin : "12px 0px 6px 0px"
+								}
+							},
+							
+							{
+								"autoComplt-hint" : {
+									color : "red",
+									height : "1me",
+									margin : "12px 4px",
+									padding : "6px 4px",
+									backgroundColor : "#efefef"
+								}
+							}
+						];	
+					
+					document.querySelector("#mocha").style.display = "none";
+					document.querySelector("#inputsHolder").style.display = "block";
+
+					for (var i = 0; i < inputs.length; i++) {
+						
+						autoComplt.enable(inputs[i], configs[i]);
+						
+						inputs[i].autoComplt.setHintsFetcher(hintsFetcher);
+						
+						inputs[i].autoComplt.setListener("select", onSelectListener);						
+						
+						if (styles[i]) {
+						
+							for (var cls in styles[i]) {								
+								if (styles[i].hasOwnProperty(cls)) inputs[i].autoComplt.setStyles(cls, styles[i][cls]);
+							}
 						}
 					}
-					
-					return true;
 				}
-			
-			input = inputs[1];
-			targets = [ "autoComplt-list", "autoComplt-hint", "autoComplt-hint-selected" ];
-			styles = {
-				"autoComplt-list" : {
-					attrs : [ "border", "maxHeight" ],
-					values : [ "4px dotted green", "8em" ]
-				},
-				"autoComplt-hint-selected" : {
-					attrs : [ "color", "backgroundColor" ],
-					values : [ "blue", "yellow" ]
-				},
-				"autoComplt-hint" : {
-					attrs : [ "margin" ],
-					values : [ "12px 0px 6px 0px" ]
-				}
-			};			
-			if (!setStyles()) {
-				return false;
-			}
-			
-			input = inputs[2];
-			targets = [ "autoComplt-hint" ];
-			styles = {
-				"autoComplt-hint" : {
-					attrs : [ "height", "padding", "margin", "color", "backgroundColor" ],
-					values : [ "1em", "6px 4px", "12px 4px", "red", "#efefef" ]
-				}
-			};			
-			if (!setStyles()) {
-				return false;
-			}
-			
-			return true;
-		});
-		test.addCase("destroy", function () {
-			inputs[0].autoComplt.destroy(hintsFetcher);
-			if (!inputs[0].autoComplt) {
-				autoComplt.enable(inputs[0], {					
-					hintsFetcher : hintsFetcher
-				});
-				return true;
-			}
-		});
-		test.addCase("setListener", function () {
-			
-			var cases = [
-				{ name : "onselect", listener : function () {},   expect : false },
-				{ name : "onselect", listener : null,             expect : false },
-				{ name : "select",   listener : {},               expect : false },			
-				{ name : "select",   listener : function () {},   expect : true },
-				{ name : "select",   listener : null,             expect : true },			
-				{ name : "select",   listener : onSelectListener, expect : true },
-			];
-			
-			for (var i = 0; i < cases.length; i++) {				
-				if (inputs[0].autoComplt.setListener(cases[i].name, cases[i].listener) !== cases[i].expect) return false;				
-			}
-			
-			return true;
-		});
+			};		
 		
-		test.runCases();
+	</script>
+	<script>
+		/**
+		 * Mocha tests
+		 */
+		
+		if (mochaTest.flag_run_mocha_tests) {
+		
+			mocha.setup("bdd");
+			
+			if (!Array.prototype.forEach) {Array.prototype.forEach=function(callback,thisArg){var T,k;if(this==null){throw new TypeError(" this is null or not defined");}var O=Object(this);var len=O.length>>>0;if(typeof callback!=="function"){throw new TypeError(callback+" is not a function");}if(thisArg){T=thisArg}k=0;while(k<len){var kValue;if(k in O){kValue=O[k];callback.call(T,kValue,k,O)}k++}}}
+		
+			var formaStr = function () { // From : http://jsfiddle.net/joquery/9KYaQ/
+				
+					// The string containing the format items (e.g. "{0}")
+					// will and always has to be the first argument.
+					var theString = arguments[0];
+					
+					// start with the second argument (i = 1)
+					for (var i = 1; i < arguments.length; i++) {
+						// "gm" = RegEx options for Global search (more than one instance)
+						// and for Multiline search
+						var regEx = new RegExp("\\{" + (i - 1) + "\\}", "gm");
+						theString = theString.replace(regEx, arguments[i]);
+					}
+					
+					return theString;
+				};
+				
+				assert = proclaim,
+			
+				assertInputEnabled = function (input) {
+					
+					assert.ok(input != null, formaStr("input is null => {0}", input));
+					
+					assert.isObject(input, formaStr("input is not object => {0}", input));
+					
+					assert.ok(input.autoComplt != null, formaStr("input has no autoComplt"));
+					
+					assert.isObject(input.autoComplt, formaStr("input.autoComplt is not object"));
+				};
+			
+			describe("autoCmplt", function () {
+				
+				describe("#enable", function () {
+				
+					var input;
+					
+					beforeEach(function () {
+						input = document.createElement("input");
+					});
+					
+					afterEach(function () {
+						input = undefined;				
+					});
+				
+					it("enable successfully", function () {	
+						
+						autoComplt.enable(input);						
+						
+						assertInputEnabled(input);
+					});
+				
+					it("enable successfully with hintsFetcher", function () {
+						
+						autoComplt.enable(input, { hintsFetcher : function () {} });	
+						
+						assertInputEnabled(input);						
+					});
+				
+					it("enable successfully with delay", function () {
+						
+						autoComplt.enable(input, { delay : 900 });	
+						
+						assertInputEnabled(input);						
+					});
+				
+					it("enable successfully with maxHintNum", function () {
+						
+						autoComplt.enable(input, { maxHintNum : 900 });	
+						
+						assertInputEnabled(input);						
+					});
+				
+					it("enable successfully with params", function () {
+						
+						autoComplt.enable(input, { 
+					
+							delay : 900,
+							
+							maxHintNum : 900,
+						
+							hintsFetcher : function () {}
+						});	
+						
+						assertInputEnabled(input);						
+					});
+				
+					it("enable successfully with unknown param - {}", function () {
+						
+						autoComplt.enable(input, {});	
+						
+						assertInputEnabled(input);						
+					});
+				
+					it("enable successfully with unknown param - []", function () {
+						
+						autoComplt.enable(input, {});	
+						
+						assertInputEnabled(input);						
+					});
+				
+					it("enable successfully with unknown param - Number", function () {
+						
+						autoComplt.enable(input, 15);	
+						
+						assertInputEnabled(input);						
+					});
+				
+					it("enable successfully with unknown param - String", function () {
+						
+						autoComplt.enable(input, "Hello");	
+						
+						assertInputEnabled(input);						
+					});
+				
+					it("enable successfully with unknown param - Date", function () {
+						
+						autoComplt.enable(input, new Date);	
+						
+						assertInputEnabled(input);						
+					});
+				
+					it("enable successfully with unknown params", function () {
+						
+						autoComplt.enable(input, {
+					
+							Delay : 900,
+							
+							MaxHintNum : 900,
+						
+							HintsFetcher : function () {}
+						});	
+						
+						assertInputEnabled(input);						
+					});
+					
+					it("enable unsuccessfully with unknown elements", function () {
+						
+						assert.isNull(autoComplt.enable(document.createElement("textarea")));
+						
+						assert.isNull(autoComplt.enable(document.createElement("div")));
+					
+						assert.isNull(autoComplt.enable({}));
+						
+						assert.isNull(autoComplt.enable([]));
+					});
+				});
+				
+			});			
+			
+			describe("input.autoCmplt", function () {
+				
+				var input = document.createElement("input");
+				
+				beforeEach(function () {
+					if (!input.autoComplt) autoComplt.enable(input);
+				});
+				
+				describe("#setHintsFetcher", function () {
+					
+					it("should set", function () {
+						
+						assert.ok(input.autoComplt.setHintsFetcher(function () {}));
+						
+						assert.ok(input.autoComplt.setHintsFetcher(null), "Fail to remove hintsFetcher");
+					});
+					
+					it("should not set", function () {
+						
+						assert.notOk(input.autoComplt.setHintsFetcher({}), "{} shouldn't be hintsFetcher");
+						
+						assert.notOk(input.autoComplt.setHintsFetcher([]), "[] shouldn't be hintsFetcher");
+						
+						assert.notOk(input.autoComplt.setHintsFetcher(999), "Numer shouldn't be hintsFetcher");
+						
+						assert.notOk(input.autoComplt.setHintsFetcher("function"), "String shouldn't be hintsFetcher");
+						
+						assert.notOk(input.autoComplt.setHintsFetcher(new Date), "Date shouldn't be hintsFetcher");
+						
+						assert.notOk(input.autoComplt.setHintsFetcher(undefined), "Undefined shouldn't be hintsFetcher");
+					});
+				});
+				
+				describe("#setListener", function () {
+					
+					describe("set select listener", function () {
+					
+						it("should set", function () {
+							
+							assert.ok(input.autoComplt.setListener("select", function () {}));
+							
+							assert.ok(input.autoComplt.setListener("select", null), "Fail to remove listener");						
+						});		
+					
+						it("should not set", function () {
+							
+							assert.notOk(input.autoComplt.setHintsFetcher("select", {}), "{} shouldn't be hintsFetcher");
+							
+							assert.notOk(input.autoComplt.setHintsFetcher("select", []), "[] shouldn't be hintsFetcher");
+							
+							assert.notOk(input.autoComplt.setHintsFetcher("select", 999), "Numer shouldn't be hintsFetcher");
+							
+							assert.notOk(input.autoComplt.setHintsFetcher("select", "function"), "String shouldn't be hintsFetcher");
+							
+							assert.notOk(input.autoComplt.setHintsFetcher("select", new Date), "Date shouldn't be hintsFetcher");
+							
+							assert.notOk(input.autoComplt.setHintsFetcher("select", undefined), "Undefined shouldn't be hintsFetcher");
+						
+							assert.notOk(input.autoComplt.setListener("onselect", function () {}));
+							
+							assert.notOk(input.autoComplt.setListener("onselect", null));
+						});			
+					});					
+				});
+				
+				describe("#destroy", function () {
+					
+					it("should destroy", function () {
+					
+						input.autoComplt.destroy();
+						
+						assert.ok(!input.autoComplt);
+					});
+				});
+				
+				describe("#setStyles", function () {
+				
+					var knownClass = {
+							
+							"autoComplt-list" : {
+								
+								name : "autoComplt-list",
+						
+								valids : { // valid, adjustable styles
+									
+									border : "1px solid red",
+									
+									maxHeight : "500px",
+									
+									backgroundColor : "#987654"
+								},
+								
+								invalids : { // Invalid styles						
+									
+									Border : "1px solid red",
+									
+									MaxHeight : "500px",
+									
+									BackgroundColor : "#987654",
+									
+									padding : "10px 10px",
+									
+									margin : "0 auto",
+									
+									width : "80%"
+								}
+							},
+							
+							"autoComplt-hint" : {
+								
+								name : "autoComplt-hint",
+						
+								valids : {
+									
+									height : "50px",
+									
+									color : "#456789",
+									
+									fontSize : "1.5em",
+									
+									padding : "500px 500px",
+									
+									margin : "1px 2px 3px 4px",
+									
+									backgroundColor : "#123456"
+								},
+								
+								invalids : {
+									
+									Height : "50px",
+									
+									Color : "#456789",
+									
+									FontSize : "1.5em",
+									
+									Padding : "500px 500px",
+									
+									Margin : "1px 2px 3px 4px",
+									
+									BackgroundColor : "#123456",
+									
+									maxHeight : "300px",
+									
+									width : "80%"
+								}
+							},
+							
+							"autoComplt-hint-selected" : {
+								
+								name : "autoComplt-hint-selected",
+								
+								valids : {
+									
+									color : "#456789",
+									
+									backgroundColor : "#123456"
+								},
+								
+								invalids : {
+									
+									Height : "50px",
+									
+									Color : "#456789",
+									
+									FontSize : "1.5em",
+									
+									Padding : "500px 500px",
+									
+									Margin : "1px 2px 3px 4px",
+									
+									BackgroundColor : "#123456",
+									
+									maxHeight : "300px",
+									
+									width : "80%"
+								}							
+							}
+						},
+					
+						mixOwnProperties = function () {
+						
+							var arg,
+							
+								mix = {};
+							
+							for (var i = 0; i < arguments.length; i++) {
+								
+								arg = arguments[i];
+								
+								for (var prop in arg) {							
+									if (arg.hasOwnProperty(prop)) mix[prop] = arg[prop];
+								}
+							}
+							
+							return mix;
+						},
+						
+						assert_should_set = function (cls, style) {
+							
+							return function () {
+								
+								var resultStyle = input.autoComplt.setStyles(cls, style);
+							
+								assert.ok(resultStyle instanceof Object);
+								
+								for (var attr in style) {								
+									if (style.hasOwnProperty(attr)) assert.strictEqual(style[attr], resultStyle[attr]);
+								}								
+							}
+						},
+						
+						assert_should_not_set = function (cls, style) {
+							
+							return function () {
+						
+								var resultStyle = input.autoComplt.setStyles(cls, style);
+							
+								assert.notOk(resultStyle instanceof Object);							
+							}
+						},
+						
+						assert_should_ignore_invalids = function (cls, valids, invalids) {
+							
+							return function () {								
+							
+								var mix = mixOwnProperties(valids, invalids),
+									
+									resultStyle = input.autoComplt.setStyles(cls, mix);							
+								
+								assert.ok(resultStyle instanceof Object);						
+								
+								for (var attr in valids) {								
+									if (valids.hasOwnProperty(attr)) assert.strictEqual(valids[attr], resultStyle[attr]);
+								}
+								
+								for (var attr in invalids) {								
+									if (invalids.hasOwnProperty(attr)) assert.isUndefined(resultStyle[attr], formaStr("Invalid style, {0}, is set", attr));
+								}
+							}
+						};
+					
+					describe("set autoComplt-list", function () {
+					
+						var cls = knownClass["autoComplt-list"].name,
+						
+							valids = knownClass["autoComplt-list"].valids,
+							
+							invalids = knownClass["autoComplt-list"].invalids;
+						
+						it("should set", assert_should_set(cls, valids));
+						
+						it("should not set", assert_should_not_set(cls, invalids));
+						
+						it("should ignore invalids", assert_should_ignore_invalids(cls, valids, invalids));
+					});
+				
+					describe("set autoComplt-hint", function () {
+					
+						var cls = knownClass["autoComplt-hint"].name,
+						
+							valids = knownClass["autoComplt-hint"].valids,
+							
+							invalids = knownClass["autoComplt-hint"].invalids;		
+						
+						it("should set", assert_should_set(cls, valids));
+						
+						it("should not set", assert_should_not_set(cls, invalids));
+						
+						it("should ignore invalids", assert_should_ignore_invalids(cls, valids, invalids));					
+					});
+				
+					describe("set autoComplt-hint-selected", function () {
+					
+						var cls = knownClass["autoComplt-hint-selected"].name,
+						
+							valids = knownClass["autoComplt-hint-selected"].valids,
+							
+							invalids = knownClass["autoComplt-hint-selected"].invalids;			
+						
+						it("should set", assert_should_set(cls, valids));
+						
+						it("should not set", assert_should_not_set(cls, invalids));
+						
+						it("should ignore invalids", assert_should_ignore_invalids(cls, valids, invalids));					
+					});					
+				
+					describe("set unknown class", function () {
+						
+						it("should not set", function () {
+							
+							var cls = knownClass["autoComplt-list"].name,
+								
+								valids = knownClass["autoComplt-list"].valids;
+							
+							assert_should_not_set(cls.toUpperCase(), valids);
+							
+							assert_should_not_set(cls.toLowerCase(), valids);
+						});
+					});
+				});
+			
+				describe("#config", function () {
+					
+					var valid;
+					
+					beforeEach(function () { // Make sure to restore
+					
+						valid = {
+							delay : 300,
+							maxHintNum : 5
+						};
+					});
+					
+					it("should set", function () {						
+						
+						var result = input.autoComplt.config(valid);
+						
+						assert.ok(result instanceof Object);
+						
+						for (var attr in valid) {
+							if (valid.hasOwnProperty(attr)) assert.strictEqual(result[attr], valid[attr]);
+						}
+					});
+					
+					it("should not set", function () {
+						
+						var i = 0, result;
+						
+						result = input.autoComplt.config(null);						
+						assert.notOk(result instanceof Object, formaStr("Set invalid configs @ {0}", i++));
+						
+						result = input.autoComplt.config([]);						
+						assert.notOk(result instanceof Object, formaStr("Set invalid configs @ {0}", i++));
+						
+						result = input.autoComplt.config({});						
+						assert.notOk(result instanceof Object, formaStr("Set invalid configs @ {0}", i++));	
+						
+						valid.Delay = 100;
+						valid.MaxHintNum = 99;
+						delete valid.delay; delete valid.maxHintNum;
+						
+						result = input.autoComplt.config(valid);						
+						assert.notOk(result instanceof Object, formaStr("Set invalid configs @ {0}", i++));
+					});
+				});
+			});
+			
+			mocha.run(setupDemo);
+		
+		} else {
+			
+			setupDemo();
+		}
 	</script>
 </body>
 
