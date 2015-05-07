@@ -1,8 +1,9 @@
-# Version: TBD
+# Version: 0.3.2
 
-# Date: TBD
+# Date: 2015.05.07
 
 # Items:
+	> Fix no keyup & keydown event triggered on FF Android
 	> Fine-tuen the mobile and tablet scenario
 	> Open setting customized preview hint txt
 	> Open more changable styles
