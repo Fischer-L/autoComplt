@@ -1,3 +1,36 @@
+# Version: 0.3.3
+
+# Date: 2015.05.07
+
+# Items:
+	> The items below from v0.3.2 are meaningless...
+		* Open setting customized preview hint txt
+		* Open more changable styles
+		* Remove the rmSandbox method because we discourage no setting sandbox.
+
+# Supported:
+	> FF 37.0.2, FF Android 37.0.2
+	> Chrome 42.0.2311.90, Chrome iOS 42.0.2272.56, Chrome Android 42.0.2311.111
+	> Safari iOS 8.1.1
+	> Opera Mini iOS 10.0.1.90729, Opera Android 29.0.1809.91837
+	> Dolphin iOS 8.6.0, Dolphin Android 11.4.9
+	> Android 4.4 browser
+	> IE8/9/10/11 (mobile fine-tune starts from 10)
+
+# Remark:
+	> In the mobiel mode, touching on other parts of doc wouldn't trigger the close of the list: All browsers on iOS
+		* This is because the blur event won't be triggered on touching on other parts of doc
+		* But the blur event will be triggered on clicking the SW KB's close button
+	> No function: Opera Mini Android 8.0.1807.91281
+
+# TODOs:
+	> How to auto test the listeners
+	> How to auto test the key-in
+	> Open more styles for change and customization, like
+		* mobile proprietary and PC proprietary settings
+		
+-----------------------------------------------
+
 # Version: 0.3.2
 
 # Date: 2015.05.07
