@@ -93,6 +93,9 @@ var autoComplt = (function () {
 		> Refer to the Public APIs above
 	Methods:
 		[ Private ]
+		> _getIEVersion : Get the IE version
+		> _getAppropriateMode : Get the mode appropriate for the current user scenario
+		> _getWindowSize : Get the client window width and height
 		> _normalizeEvt : Normalize the event obj
 		> _addEvt : Add an event to one elem, used for cross-browser mitigation
 		> _rmEvent : remove an event to one elem, used for cross-browser mitigation
@@ -107,7 +110,92 @@ var autoComplt = (function () {
 	
 	if(!Array.prototype.indexOf){Array.prototype.indexOf=function(searchElement,fromIndex){if(this===undefined||this===null){throw new TypeError('"this" is null or not defined');}var length=this.length>>>0;fromIndex=+fromIndex||0;if(Math.abs(fromIndex)===Infinity){fromIndex=0}if(fromIndex<0){fromIndex+=length;if(fromIndex<0){fromIndex=0}}for(;fromIndex<length;fromIndex++){if(this[fromIndex]===searchElement){return fromIndex}}return-1}}
 	
-	var _CONST = {
+	var
+	/*	Return:
+			@ Is IE: <NUM> the version of IE
+			@ Not IE: NaN
+	*/
+	_getIEVersion = function () {
+		var rv = -1; // Return value assumes failure.
+		if (navigator.appName == 'Microsoft Internet Explorer') {
+		  var ua = navigator.userAgent;
+		  var re  = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
+		  if (re.exec(ua) != null)
+			 rv = +(RegExp.$1);
+		}
+		return (rv === -1) ? NaN : rv;
+	},
+	/*	Return:
+			> _CONST.modePC or _CONST.modeMobile
+	*/
+	_getAppropriateMode = function () {
+		
+		// Judge by the userAgent string
+		var ua = window.navigator.userAgent.toLowerCase();				
+		if (ua.search(/mobile|windows phone/) >= 0) return _CONST.modeMobile;
+		
+		// Bye the legacy IEs
+		if (_getIEVersion() <= 9) return _CONST.modePC;
+		
+		// Judge by the window width
+		return (_getWindowSize().windowWidth > _CONST.modeMobileW) ? _CONST.modePC : _CONST.modeMobile;
+	},
+	/*	Return: {
+			windowWidth : the width of the client window in px. If unable to find, then -1.
+			windowHeight : the height of the client window in px. If unable to find, then -1.
+		}
+	*/
+	_getWindowSize = function () {
+	
+		if(window.innerWidth) {
+		
+			return {
+				windowWidth : window.innerWidth,
+				windowHeight: window.innerHeight
+			};
+			
+		} else if (document.documentElement.offsetHeight) {
+		
+			return {
+				windowWidth : document.documentElement.offsetWidth, 
+				windowHeight : document.documentElement.offsetHeight
+			};
+			
+		} else if (document.body.offsetHeight) {
+		
+			return {
+				windowWidth : document.body.offsetWidth, 
+				windowHeight : document.body.offsetHeight
+			};
+			
+		} else if (document.documentElement.clientHeight) {
+		
+			return {
+				windowWidth : document.documentElement.clientWidth, 
+				windowHeight : document.documentElement.clientHeight
+			};
+			
+		} else if (document.body.clientHeight) {
+		
+			return {
+				windowWidth : document.body.clientWidth, 
+				windowHeight : document.body.clientHeight
+			};				
+		}
+		
+		return {
+			windowWidth : -1,
+			windowHeight: -1
+		};
+	},
+	/*
+	_CONST = {
+		
+		modePC : "modePC", // Represent the PC mode
+		
+		modeMobile : "modeMobile", // Represent the mobile mode
+			
+		modeMobileW : 768, // in px. The width used to seperate the PC & mobile mode
 		
 		autoCompltListClass : "autoComplt-list",
 		
@@ -115,7 +203,7 @@ var autoComplt = (function () {
 		
 		autoCompltHintSelectedClass : "autoComplt-hint-selected",
 		
-		maxHintNum : 10,
+		maxHintNum : (_getAppropriateMode() === _CONST.modePC) ? 10 : 5, // For limited mobile screen, not too many
 		
 		autoCompltDelay : 250, // in ms
 		
@@ -176,13 +264,94 @@ var autoComplt = (function () {
 		listenersSupported : [ 
 			"select" // Called when the user's final hint selection is decided
 		]
-	};
+	},
+	*/
+	_CONST = (function (c) {
+				
+		_CONST = c;
+		
+		c.modePC = "modePC"; // Represent the PC mode
+		
+		c.modeMobile = "modeMobile"; // Represent the mobile mode
+			
+		c.modeMobileW = 768; // in px. The width used to seperate the PC & mobile mode
+		
+		c.autoCompltListClass = "autoComplt-list";
+		
+		c.autoCompltHintClass = "autoComplt-hint";
+		
+		c.autoCompltHintSelectedClass = "autoComplt-hint-selected";
+		
+		c.maxHintNum = (_getAppropriateMode() === _CONST.modePC) ? 10 : 5; // For limited mobile screen, not too many
+		
+		c.autoCompltDelay = 250; // in ms
+		
+		c.hiddenArg_close_list_n_make_final_selection = "hiddenArg_close_list_n_make_final_selection";
+		
+		c.listStatus = {
+			attr : "data-listStatus",
+			open : "open",
+		};
+		
+		c.keyCode = {
+			up : 38,
+			down : 40,
+			esc : 27,
+			enter : 13
+		};
+	
+		c.defaultStyles = {
+		
+			autoCompltList : {
+				maxHeight : "none",
+				border : "1px solid #aaa",
+				padding : "0",
+				margin: "0",
+				zIndex : 99,
+				overflowX : "hidden",
+				overflowY : "auto",
+				display : "none",
+				position: "absolute",
+				backgroundColor : "#fff",
+			},
+			
+			autoCompltHint : {
+				height : "1.5em",
+				padding: (_getAppropriateMode() === _CONST.modePC) ? "2px 6px 2px 10px" : "6px 6px 6px 10px", // For good touch ux, enlarge for the mobile mode
+				margin: "6px 0",
+				overflow: "hidden",
+				listStyleType: "none",
+				color : "#000",
+				backgroundColor : "#fff",
+				cursor : "default",
+				fontSize : "1em"
+			},
+			
+			autoCompltHintSelected : {
+				color : "#fff",
+				backgroundColor : "#3399ff"
+			}
+		};
+		
+		c.adjStyleAttrs = {
+			autoCompltList : [ "border", "maxHeight", "backgroundColor" ],
+			autoCompltHint : [ "height", "padding", "margin", "color", "backgroundColor", "fontSize" ],
+			autoCompltHintSelected : [ "color", "backgroundColor" ]
+		};
+		
+		// names of listeners supported
+		c.listenersSupported = [ 
+			"select" // Called when the user's final hint selection is decided
+		];
+		
+		return _CONST;
+	})({}),
 	/*	Arg:
 			<OBJ> e = the event obj
 		Return:
 			<OBJ> the normalized event obj
 	*/
-	var _normalizeEvt = function (e) {
+	_normalizeEvt = function (e) {
 		
 		if (!e) e = window.event;
 		
@@ -199,33 +368,33 @@ var autoComplt = (function () {
 			return false;
 		}
 		return e;
-	}
+	},
 	/*	Arg:
 			<ELM> elem = the DOM elem
 			<STR> evt = the event name
 			<FN> eHandle = the event handle
 	*/
-	var _addEvt = function (elem, evt, eHandle) {
+	_addEvt = function (elem, evt, eHandle) {
 		if (elem.addEventListener) {
 			elem.addEventListener(evt, eHandle);
 		} else if (elem.attachEvent) { // The IE 8 case
 			elem.attachEvent("on" + evt, eHandle);
 		}
-	}
+	},
 	/*	Arg: Refer to _addEvt
 	*/
-	var _rmEvent = function (elem, evt, eHandle) {
+	_rmEvent = function (elem, evt, eHandle) {
 		if (elem.removeEventListener) {
 			elem.removeEventListener(evt, eHandle);
 		} else if (elem.detachEvent) { // The IE 8 case
 			elem.detachEvent("on" + evt, eHandle);
 		}
-	}
+	},
 	/*	Arg:
 			<ELM> elem = the DOM elem
 			<STR> name = the style name
 	*/
-	var _getComputedStyle = function (elem, name) {
+	_getComputedStyle = function (elem, name) {
 		var v = null;
 		
 		if (window.getComputedStyle) {
@@ -274,14 +443,14 @@ var autoComplt = (function () {
 		}
 		
 		return v;
-	}
+	},
 	/*	Methods:
 			[ Public ]
 			> buildElem : Build on elem from the HTML text
 			> buildHint : Build one autocomplete hint elem
 			> buildList : Build one autocomplete list
 	*/
-	var _ui = {
+	_ui = {
 		/*	Arg:
 				<STR> html = the HTMl text
 			Return:
@@ -339,7 +508,7 @@ var autoComplt = (function () {
 
 			return list;
 		}
-	};
+	},
 	/*	Properties:
 			[ Public ]
 			<ELM> uiElem = the autocomplete list current being displayed and associated with.
@@ -362,7 +531,7 @@ var autoComplt = (function () {
 			> unpick : Unpick all hints
 			> getPicked : Get the hint elem picked
 	*/
-	var _AutoCompltList = function (assocInput) {
+	_AutoCompltList = function (assocInput) {
 
 		this.uiElem = null;
 		this.assocInput = assocInput;
@@ -632,7 +801,8 @@ var autoComplt = (function () {
 		}
 	}
 
-	var publicProps = {
+	var
+	publicProps = {
 	
 		enable : function (input, params) {
 			if (   input
@@ -662,199 +832,200 @@ var autoComplt = (function () {
 				*/
 				input.autoComplt = {};
 				
-				var input_autoComplt_delay = _CONST.autoCompltDelay,
-					input_autoComplt_enabled = true,
-					input_autoComplt_currentTarget = "",
-					input_autoComplt_hintsFetcher = null,
-					input_autoComplt_listenerMap = null,
-					input_autoComplt_list = new _AutoCompltList(input),
-					/*
-					*/
-					input_autoComplt_startFetcher = function () {
+				var 
+				input_autoComplt_delay = _CONST.autoCompltDelay,
+				input_autoComplt_enabled = true,
+				input_autoComplt_currentTarget = "",
+				input_autoComplt_hintsFetcher = null,
+				input_autoComplt_listenerMap = null,
+				input_autoComplt_list = new _AutoCompltList(input),
+				/*
+				*/
+				input_autoComplt_startFetcher = function () {
+				
+					if (   input.value.length > 0
+						&& input_autoComplt_enabled
+						&& typeof input_autoComplt_hintsFetcher == "function"
+						&& input_autoComplt_currentTarget !== input.value // If equals, it means we've already been searching for the hints for the same value
+					) {
 					
-						if (   input.value.length > 0
-							&& input_autoComplt_enabled
-							&& typeof input_autoComplt_hintsFetcher == "function"
-							&& input_autoComplt_currentTarget !== input.value // If equals, it means we've already been searching for the hints for the same value
-						) {
-						
-							var fetcherCaller = {
-								
-								that : input,								
-								
-								// Record the autocomplete target for this fetching job
-								compltTarget : (input_autoComplt_currentTarget = input.value),
-								
-								compltTargetMatchCurrentTarget : function () {
-									// If the user's input has changed during the fetching, this fetching job is useless.
-									// So only when the user's input doesn't change, we will return true to indicate proceeding further.
-									return (fetcherCaller.compltTarget === input_autoComplt_currentTarget);
-								},
-								
-								call : function () {
-									
-									if (fetcherCaller.compltTargetMatchCurrentTarget()) {
-									
-										input_autoComplt_hintsFetcher.call(
-											fetcherCaller.that,
-											fetcherCaller.compltTarget,
-											fetcherCaller.openHint
-										);
-									}
-								},
-								
-								openHint : function (hints) {
-								
-									if (fetcherCaller.compltTargetMatchCurrentTarget()) {
-									
-										if (input_autoComplt_list.putHints(hints)) {
-											input_autoComplt_list.open();
-										} else {
-											fetcherCaller.that.autoComplt.close();
-										}
-									}
-								}								
-							};							
+						var fetcherCaller = {
 							
-							setTimeout(fetcherCaller.call, input_autoComplt_delay);
-						}
-					},
-					/*
-					*/
-					input_autoComplt_compltInput= function () {
-					
-						if (input_autoComplt_enabled) {
+							that : input,								
+							
+							// Record the autocomplete target for this fetching job
+							compltTarget : (input_autoComplt_currentTarget = input.value),
+							
+							compltTargetMatchCurrentTarget : function () {
+								// If the user's input has changed during the fetching, this fetching job is useless.
+								// So only when the user's input doesn't change, we will return true to indicate proceeding further.
+								return (fetcherCaller.compltTarget === input_autoComplt_currentTarget);
+							},
+							
+							call : function () {
+								
+								if (fetcherCaller.compltTargetMatchCurrentTarget()) {
+								
+									input_autoComplt_hintsFetcher.call(
+										fetcherCaller.that,
+										fetcherCaller.compltTarget,
+										fetcherCaller.openHint
+									);
+								}
+							},
+							
+							openHint : function (hints) {
+							
+								if (fetcherCaller.compltTargetMatchCurrentTarget()) {
+								
+									if (input_autoComplt_list.putHints(hints)) {
+										input_autoComplt_list.open();
+									} else {
+										fetcherCaller.that.autoComplt.close();
+									}
+								}
+							}								
+						};							
 						
+						setTimeout(fetcherCaller.call, input_autoComplt_delay);
+					}
+				},
+				/*
+				*/
+				input_autoComplt_compltInput= function () {
+				
+					if (input_autoComplt_enabled) {
+					
+						var hint = input_autoComplt_list.getPicked();
+						
+						if (hint) {
+							input.value = hint.innerHTML;
+						} else {
+						// If no hint is selected, just use the original user input to autocomplete
+							input.value = input_autoComplt_currentTarget;
+						}
+					}
+				},
+				/*
+				*/
+				input_autoComplt_blurEvtHandle = function (e) {
+				
+					if (input_autoComplt_list.mouseOnList) {
+					// If the mouse is on the autocomplete list, do not close the list
+					// and still need to focus on the input.
+						input.focus();
+						input_autoComplt_list.mouseOnList = false; // Assign false for the next detection
+					} else {
+						
+						if (input_autoComplt_list.isOpen()) {
+							input.autoComplt.close(_CONST.hiddenArg_close_list_n_make_final_selection);
+						}
+					}
+				},
+				/*
+				*/
+				input_autoComplt_keyEvtHandle = function (e) {
+				
+					e = _normalizeEvt(e);
+					
+					if (input_autoComplt_enabled) {
+						
+						if (   e.type == "keydown"
+							&& input_autoComplt_list.isOpen()
+							&& (e.keyCode === _CONST.keyCode.up || e.keyCode === _CONST.keyCode.down)
+						) {
+						// At the case that the hint list is open ans user is walking thru the hints.
+						// Let's try to autocomplete the input by the selected input.
+							
 							var hint = input_autoComplt_list.getPicked();
 							
-							if (hint) {
-								input.value = hint.innerHTML;
-							} else {
-							// If no hint is selected, just use the original user input to autocomplete
-								input.value = input_autoComplt_currentTarget;
-							}
-						}
-					},
-					/*
-					*/
-					input_autoComplt_blurEvtHandle = function (e) {
-					
-						if (input_autoComplt_list.mouseOnList) {
-						// If the mouse is on the autocomplete list, do not close the list
-						// and still need to focus on the input.
-							input.focus();
-							input_autoComplt_list.mouseOnList = false; // Assign false for the next detection
-						} else {
+							if (e.keyCode === _CONST.keyCode.up) {
 							
-							if (input_autoComplt_list.isOpen()) {
-								input.autoComplt.close(_CONST.hiddenArg_close_list_n_make_final_selection);
-							}
-						}
-					},
-					/*
-					*/
-					input_autoComplt_keyEvtHandle = function (e) {
-					
-						e = _normalizeEvt(e);
-						
-						if (input_autoComplt_enabled) {
-							
-							if (   e.type == "keydown"
-								&& input_autoComplt_list.isOpen()
-								&& (e.keyCode === _CONST.keyCode.up || e.keyCode === _CONST.keyCode.down)
-							) {
-							// At the case that the hint list is open ans user is walking thru the hints.
-							// Let's try to autocomplete the input by the selected input.
-								
-								var hint = input_autoComplt_list.getPicked();
-								
-								if (e.keyCode === _CONST.keyCode.up) {
-								
-									if (!hint) {
-									// If none is selected, then pick the last hint
-										input_autoComplt_list.pick(-1);												
-									} else if (hint.previousSibling) {
-									// If some hint is selected and the previous hint exists, then pick the previous hint
-										input_autoComplt_list.pick(hint.previousSibling);
-									} else {
-									// If some hint is selected but the previous hint doesn't exists, then unpick all
-										input_autoComplt_list.unpick();
-									}
-									
-								} else if (e.keyCode === _CONST.keyCode.down) {
-								
-									if (!hint) {
-									// If none is selected, then pick the first hint
-										input_autoComplt_list.pick(0);												
-									} else if (hint.nextSibling) {
-									// If some hint is selected and the next hint exists, then pick the next hint
-										input_autoComplt_list.pick(hint.nextSibling);
-									} else {
-									// If some hint is selected but the next hint doesn't exists, then unpick all
-										input_autoComplt_list.unpick();
-									}
-									
+								if (!hint) {
+								// If none is selected, then pick the last hint
+									input_autoComplt_list.pick(-1);												
+								} else if (hint.previousSibling) {
+								// If some hint is selected and the previous hint exists, then pick the previous hint
+									input_autoComplt_list.pick(hint.previousSibling);
+								} else {
+								// If some hint is selected but the previous hint doesn't exists, then unpick all
+									input_autoComplt_list.unpick();
 								}
 								
-								input_autoComplt_list.autoScroll();
+							} else if (e.keyCode === _CONST.keyCode.down) {
+							
+								if (!hint) {
+								// If none is selected, then pick the first hint
+									input_autoComplt_list.pick(0);												
+								} else if (hint.nextSibling) {
+								// If some hint is selected and the next hint exists, then pick the next hint
+									input_autoComplt_list.pick(hint.nextSibling);
+								} else {
+								// If some hint is selected but the next hint doesn't exists, then unpick all
+									input_autoComplt_list.unpick();
+								}
 								
-								input_autoComplt_compltInput();
+							}
+							
+							input_autoComplt_list.autoScroll();
+							
+							input_autoComplt_compltInput();
 
-							}
-							else if (e.type == "keyup") {
-								
-								var startFetching = false;
-								
-								switch (e.keyCode) {
-									case _CONST.keyCode.up: case _CONST.keyCode.down:
-										if (input_autoComplt_list.isOpen()) {
-											// We have handled this 2 key codes onkeydown, so must do nothing here
-										} else {
-											startFetching = true;
-										}
-									break;
-									
-									case _CONST.keyCode.esc:
-										if (input_autoComplt_list.isOpen()) {
-											// When pressing the ESC key, let's resume back to the original user input
-											input.value = input_autoComplt_currentTarget;
-											input.autoComplt.close(_CONST.hiddenArg_close_list_n_make_final_selection);
-										}										
-									break;
-									
-									case _CONST.keyCode.enter:
-										if (input_autoComplt_list.isOpen()) {
-											// When pressing the enter key, let's try autocomplete
-											input_autoComplt_compltInput();
-											input.autoComplt.close(_CONST.hiddenArg_close_list_n_make_final_selection);
-										}
-									break;
-									
-									default:
-										startFetching = true;
-									break;
-								}
-								
-								if (startFetching) {
-									if (input.value.length > 0) {
-										input_autoComplt_startFetcher();
-									} else {
-										input.autoComplt.close();
-									}
-								}
-							}
 						}
-					},
-					/*	Arg:
-							<STR> name = Refer to _CONST.listenersSupported
-					*/
-					input_autoComplt_invokeListener = function (name) {
-						
-						if (input_autoComplt_listenerMap != null && typeof input_autoComplt_listenerMap[name] == "function") { 
+						else if (e.type == "keyup") {
 							
-							input_autoComplt_listenerMap[name].call(input);
+							var startFetching = false;
+							
+							switch (e.keyCode) {
+								case _CONST.keyCode.up: case _CONST.keyCode.down:
+									if (input_autoComplt_list.isOpen()) {
+										// We have handled this 2 key codes onkeydown, so must do nothing here
+									} else {
+										startFetching = true;
+									}
+								break;
+								
+								case _CONST.keyCode.esc:
+									if (input_autoComplt_list.isOpen()) {
+										// When pressing the ESC key, let's resume back to the original user input
+										input.value = input_autoComplt_currentTarget;
+										input.autoComplt.close(_CONST.hiddenArg_close_list_n_make_final_selection);
+									}										
+								break;
+								
+								case _CONST.keyCode.enter:
+									if (input_autoComplt_list.isOpen()) {
+										// When pressing the enter key, let's try autocomplete
+										input_autoComplt_compltInput();
+										input.autoComplt.close(_CONST.hiddenArg_close_list_n_make_final_selection);
+									}
+								break;
+								
+								default:
+									startFetching = true;
+								break;
+							}
+							
+							if (startFetching) {
+								if (input.value.length > 0) {
+									input_autoComplt_startFetcher();
+								} else {
+									input.autoComplt.close();
+								}
+							}
 						}
-					};
+					}
+				},
+				/*	Arg:
+						<STR> name = Refer to _CONST.listenersSupported
+				*/
+				input_autoComplt_invokeListener = function (name) {
+					
+					if (input_autoComplt_listenerMap != null && typeof input_autoComplt_listenerMap[name] == "function") { 
+						
+						input_autoComplt_listenerMap[name].call(input);
+					}
+				};
 					
 				input.autoComplt.setHintsFetcher = function (hintsFetcher) {
 					if (hintsFetcher === null || typeof hintsFetcher == "function") {
