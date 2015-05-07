@@ -2,16 +2,19 @@
 <html>
 
 <head>
-	<link rel="stylesheet" media="all" href="../lib/mocha.css">
+	<link rel="stylesheet" media="all" href="testility/mocha.css">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<style>
 		body, input {
 			font-size: 14px;
+			display : block;
 		}
 		#inputsHolder {
 			width : 100%;
 			display: none;
 		}
 		.autoCmplt-input {
+			width: 50%;
 			height: 2em;
 			padding: 2px;
 			margin: 10%;
@@ -21,6 +24,20 @@
 		}
 		.autoCmplt-input.input-2 {
 			width: 300px;
+		}
+		.testxtBlock {
+			display : none;
+		}
+		@media (max-width : 768px) {
+			
+			.testxtBlock {
+				width : 100px;
+				height : 500px;
+				border : 2px dotted red;
+				margin : 10px auto;
+				color : red;
+				display : block;
+			}
 		}
 	</style>
 </head>
@@ -32,12 +49,18 @@
 	<div id="inputsHolder">
 		<input class="autoCmplt-input input-0" type="text" placeholder="Please key in some text.">
 		<input class="autoCmplt-input input-1" type="text" placeholder="Please key in some text.">
+		<div class="aWrp testxtBlock">
+			This is a test text block...
+		</div>
 		<input class="autoCmplt-input input-2" type="text" placeholder="Please key in some text.">
+		<div class="aWrp testxtBlock">
+			This is a test text block...
+		</div>
 	<div>
 	
-	<script type="text/javascript" src="autoComplt.js"></script>
-	<script src="../lib/mocha.js"></script>
-	<script src="../lib/proclaim.js"></script>
+	<script type="text/javascript" src="src/autoComplt.js"></script>
+	<script src="testility/mocha.js"></script>
+	<script src="testility/proclaim.js"></script>
 	
 	<script>
 		
