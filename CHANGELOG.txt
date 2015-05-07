@@ -19,7 +19,9 @@
 
 # Remark:
 	> In the mobiel mode, touching on other parts of doc wouldn't trigger the close of the list: All browsers on iOS
-	> No function: FF Android, Opera Mini Android 8.0.1807.91281
+		* This is because the blur event won't be triggered on touching on other parts of doc
+		* But the blur event will be triggered on clicking the SW KB's close button
+	> No function: Opera Mini Android 8.0.1807.91281
 
 # TODOs:
 	> How to auto test the listeners
