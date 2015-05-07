@@ -106,7 +106,7 @@ var autoComplt = (function () {
 */	
 	"use strict";
 	
-	var _DBG = 0; // A little debug flag
+	var _DBG = 1; // A little debug flag
 	
 	if(!Array.prototype.indexOf){Array.prototype.indexOf=function(searchElement,fromIndex){if(this===undefined||this===null){throw new TypeError('"this" is null or not defined');}var length=this.length>>>0;fromIndex=+fromIndex||0;if(Math.abs(fromIndex)===Infinity){fromIndex=0}if(fromIndex<0){fromIndex+=length;if(fromIndex<0){fromIndex=0}}for(;fromIndex<length;fromIndex++){if(this[fromIndex]===searchElement){return fromIndex}}return-1}}
 	
@@ -188,84 +188,6 @@ var autoComplt = (function () {
 			windowHeight: -1
 		};
 	},
-	/*
-	_CONST = {
-		
-		modePC : "modePC", // Represent the PC mode
-		
-		modeMobile : "modeMobile", // Represent the mobile mode
-			
-		modeMobileW : 768, // in px. The width used to seperate the PC & mobile mode
-		
-		autoCompltListClass : "autoComplt-list",
-		
-		autoCompltHintClass : "autoComplt-hint",
-		
-		autoCompltHintSelectedClass : "autoComplt-hint-selected",
-		
-		maxHintNum : (_getAppropriateMode() === _CONST.modePC) ? 10 : 5, // For limited mobile screen, not too many
-		
-		autoCompltDelay : 250, // in ms
-		
-		hiddenArg_close_list_n_make_final_selection : "hiddenArg_close_list_n_make_final_selection",
-		
-		listStatus : {
-			attr : "data-listStatus",
-			open : "open",
-		},
-		
-		keyCode : {
-			up : 38,
-			down : 40,
-			esc : 27,
-			enter : 13
-		},
-	
-		defaultStyles : {
-		
-			autoCompltList : {
-				maxHeight : "none",
-				border : "1px solid #aaa",
-				padding : "0",
-				margin: "0",
-				zIndex : 99,
-				overflowX : "hidden",
-				overflowY : "auto",
-				display : "none",
-				position: "absolute",
-				backgroundColor : "#fff",
-			},
-			
-			autoCompltHint : {
-				height : "1.5em",
-				padding: "2px 6px 2px 10px",
-				margin: "6px 0",
-				overflow: "hidden",
-				listStyleType: "none",
-				color : "#000",
-				backgroundColor : "#fff",
-				cursor : "default",
-				fontSize : "1em"
-			},
-			
-			autoCompltHintSelected : {
-				color : "#fff",
-				backgroundColor : "#3399ff"
-			}
-		},
-		
-		adjStyleAttrs : {
-			autoCompltList : [ "border", "maxHeight", "backgroundColor" ],
-			autoCompltHint : [ "height", "padding", "margin", "color", "backgroundColor", "fontSize" ],
-			autoCompltHintSelected : [ "color", "backgroundColor" ]
-		},
-		
-		// names of listeners supported
-		listenersSupported : [ 
-			"select" // Called when the user's final hint selection is decided
-		]
-	},
-	*/
 	_CONST = (function (c) {
 				
 		_CONST = c;
@@ -929,7 +851,7 @@ var autoComplt = (function () {
 					e = _normalizeEvt(e);
 					
 					if (input_autoComplt_enabled) {
-						
+if (_DBG) alert("keydown"); // To Del					
 						if (   e.type == "keydown"
 							&& input_autoComplt_list.isOpen()
 							&& (e.keyCode === _CONST.keyCode.up || e.keyCode === _CONST.keyCode.down)
@@ -973,6 +895,7 @@ var autoComplt = (function () {
 
 						}
 						else if (e.type == "keyup") {
+if (_DBG) alert("keyup"); // To Del					
 							
 							var startFetching = false;
 							
