@@ -749,6 +749,7 @@ var autoComplt = (function () {
 						> input_autoComplt_startFetcher : Setup and call input_autoComplt_hintsFetcher to fetch the hints
 						> input_autoComplt_compltInput : Autocomplete the <input> according to the hint selection state
 						> input_autoComplt_blurEvtHandle, input_autoComplt_keyEvtHandle : The event handle
+						> input_autoComplt_inputEvtHandleMobile : The event handle for the mobile mode
 						[ Public ]
 						> setHintsFetcher, setListener, config, setStyles, close, enable, disable, destroy : Refe to the Public APIs above
 				*/
@@ -847,11 +848,10 @@ var autoComplt = (function () {
 				/*
 				*/
 				input_autoComplt_keyEvtHandle = function (e) {
-				
+					
+					if (_getAppropriateMode() === _CONST.modeMobile) return; // Let this::input_autoComplt_inputEvtHandleMobile handle
+					
 					e = _normalizeEvt(e);
-if (_DBG) {
-	alert(e.type + " : " + e.target.value); // To Del
-}
 					
 					if (input_autoComplt_enabled) {
 						if (   e.type == "keydown"
@@ -938,6 +938,18 @@ if (_DBG) {
 								}
 							}
 						}
+					}
+				},
+				/*
+				*/
+				input_autoComplt_inputEvtHandleMobile = function (e) {
+					
+					if (_getAppropriateMode() === _CONST.modePC) return; // Let this::input_autoComplt_keyEvtHandle handle
+					
+					if (input.value.length > 0) {
+						input_autoComplt_startFetcher();
+					} else {
+						input.autoComplt.close();
 					}
 				},
 				/*	Arg:
@@ -1087,7 +1099,7 @@ if (_DBG) {
 				_addEvt(input, "keyup", input_autoComplt_keyEvtHandle);
 				_addEvt(input, "keydown", input_autoComplt_keyEvtHandle);
 				
-if (_DBG) _addEvt(input, "input", input_autoComplt_keyEvtHandle); // To Del
+				_addEvt(input, "input", input_autoComplt_inputEvtHandleMobile);
 				
 				if (params instanceof Object) {
 					input.autoComplt.config(params);
