@@ -3,7 +3,7 @@ autoComplt
 ## What is autoComplt ?
 The autoComplt is written in Javascript and lightweight and simple to use. It auto-generates the autocomplete list when user inputs some text in the &lt;input&gt; element.
 
-Try it here => http://jsfiddle.net/Fischer/eTw62/
+Try it here => http://fischer-l.github.io/autoComplt/
 
 
 ## No need of any extra lib/framework
