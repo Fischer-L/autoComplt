@@ -849,7 +849,9 @@ var autoComplt = (function () {
 				input_autoComplt_keyEvtHandle = function (e) {
 				
 					e = _normalizeEvt(e);
-if (_DBG) alert(e.type); // To Del	
+if (_DBG) {
+	alert(e.type + " : " + e.target.value); // To Del
+}
 					
 					if (input_autoComplt_enabled) {
 						if (   e.type == "keydown"
@@ -1085,7 +1087,7 @@ if (_DBG) alert(e.type); // To Del
 				_addEvt(input, "keyup", input_autoComplt_keyEvtHandle);
 				_addEvt(input, "keydown", input_autoComplt_keyEvtHandle);
 				
-if (_DBG) _addEvt(input, "keypress", input_autoComplt_keyEvtHandle); // To Del
+if (_DBG) _addEvt(input, "input", input_autoComplt_keyEvtHandle); // To Del
 				
 				if (params instanceof Object) {
 					input.autoComplt.config(params);
