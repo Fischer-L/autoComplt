@@ -112,11 +112,13 @@
 									"Abyssinian", "Ainu Dog", "Alligator", "Barb", "Bloodhound",
 									"Chinook", "Cougar", "Dingo", "Dormouse", "Earwig",
 									"Emperor Tamarin", "Falcon", "Fennec Fox", "Gecko", "German Shepherd",
-									"Hammerhead Shark", "Hermit Crab", "Iguana", "Javan Rhinoceros", "Lion"
+									"Hammerhead Shark", "Hermit Crab", "Iguana", "Javan Rhinoceros", "Lion",
+									"我是誰", "你我他", "人人為我", "我為人人", "a我",
+									"a＿"
 								];
 								
 							for (i = 0; i < words.length; i++) {
-								if (words[i].indexOf(v) >= 0) {
+								if (words[i].indexOf(v) >= 0 || v.search(words[i]) >= 0) {
 									hints.push(words[i]);
 								}
 							}

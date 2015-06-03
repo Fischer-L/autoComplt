@@ -848,7 +848,7 @@ var autoComplt = (function () {
 				/*
 				*/
 				input_autoComplt_keyEvtHandle = function (e) {
-					
+				
 					if (_getAppropriateMode() === _CONST.modeMobile) return; // Let this::input_autoComplt_inputEvtHandleMobile handle
 					
 					e = _normalizeEvt(e);
@@ -858,6 +858,7 @@ var autoComplt = (function () {
 							&& input_autoComplt_list.isOpen()
 							&& (e.keyCode === _CONST.keyCode.up || e.keyCode === _CONST.keyCode.down)
 						) {
+						
 						// At the case that the hint list is open ans user is walking thru the hints.
 						// Let's try to autocomplete the input by the selected input.
 							
